@@ -1,0 +1,11 @@
+{
+    "files.exclude": {
+        "**/.stack-work": true,
+        "**/stack.yaml.lock": true,
+        "**/dist": true,
+        "src/Parser.hs": true,
+        "src/Parser.info": true,
+        "html/index.html": true,
+        "**/*~": true
+    }
+}
