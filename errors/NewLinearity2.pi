@@ -1,0 +1,1 @@
+A(y : ?end) = new (x : !end) wait y.close x in wait y.wait x.done

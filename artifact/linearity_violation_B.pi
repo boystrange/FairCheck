@@ -1,0 +1,3 @@
+type T = !a.T
+
+B(x : T, y : !end) = x!a.B⟨x, y⟩

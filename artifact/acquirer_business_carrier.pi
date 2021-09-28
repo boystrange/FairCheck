@@ -1,0 +1,10 @@
+type T = !add.(!add.T ⊕ !pay.!end)
+type S = ?add.S + ?pay.?end
+type R = !add.R ⊕ !pay.!end
+
+A(x : T)                 = x!add.x!{add: A⟨x⟩, pay: close x}
+B(x : S, y : !ship.!end) = x?{add: B⟨x, y⟩, pay: wait x.y!ship.close y}
+C(y : ?ship.?end)        = y?ship.wait y.done
+Main                     = new (y : !ship.!end)
+                             new (x : R) ⌈x : T⌉ A⟨x⟩ in B⟨x, y⟩
+                           in C⟨y⟩

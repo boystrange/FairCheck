@@ -1,0 +1,2 @@
+C(x : !end) = (new (y : !end) C⟨y⟩ in wait y.close x) ⊕ close x
+Main        = new (x : !end) C⟨x⟩ in wait x.done

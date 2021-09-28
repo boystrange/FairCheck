@@ -1,0 +1,1 @@
+A(x : !{a: !end, b: !end}) = ⌈x : !c.!end⌉ x!c.close x

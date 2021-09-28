@@ -1,0 +1,1 @@
+A(x : ?a.!end) = x!a.close x

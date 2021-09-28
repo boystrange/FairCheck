@@ -1,0 +1,6 @@
+type S = !add.S ⊕ !pay.!end
+type T = ?add.T + ?pay.?end
+
+A(x : S) = ⌈x : !add.S⌉ x!add.A⟨x⟩
+B(x : T) = x?{add: B⟨x⟩, pay: wait x.done}
+Main     = new (x : S) A⟨x⟩ in B⟨x⟩

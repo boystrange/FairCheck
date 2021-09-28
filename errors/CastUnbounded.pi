@@ -1,0 +1,3 @@
+A(x : rec X.!{a: X, b: !end}) =
+    ⌈x : rec X.!{a: X, b: !end}⌉
+    x!{a: A⟨x⟩, b: close x}

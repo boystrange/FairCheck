@@ -1,0 +1,1 @@
+A(x : !{a: !end, b: !end}) = x!{b: close x, c: close x}

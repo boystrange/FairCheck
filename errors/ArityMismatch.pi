@@ -1,0 +1,2 @@
+A(x : !end) = close x
+B = A

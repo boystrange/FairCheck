@@ -1,0 +1,2 @@
+// this process is well typed if not checked for action boundedness
+B(x : rec X.!a.X, y : !end) = x!a.B⟨x, y⟩

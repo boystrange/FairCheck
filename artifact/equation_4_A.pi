@@ -1,0 +1,1 @@
+A = (new (x : !end) close x in wait x.A) ⊕ done

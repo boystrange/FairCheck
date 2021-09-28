@@ -1,0 +1,11 @@
+type T = !some.?{zero: T, one : !none.!end}
+type S = ?{some: !{zero: S, one: S}, none: ?end}
+type R = ?some.!{zero: R, one: ?none.?end}
+
+Client(x : T) = x!some.x?{zero: Client⟨x⟩, one: x!none.close x}
+
+Server(x : S) =
+    x?{ some: x!{zero: Server⟨x⟩, one: Server⟨x⟩}
+      , none: wait x.done }
+
+Main = new (x : R) ⌈x : S⌉ Server⟨x⟩ in Client⟨x⟩

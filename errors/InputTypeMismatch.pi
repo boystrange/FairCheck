@@ -1,0 +1,1 @@
+A(x : ?end) = x?(y).wait y.close x

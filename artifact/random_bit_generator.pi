@@ -1,0 +1,7 @@
+type S = ?more.(!0.S ⊕ !1.S) + ?stop.!end
+type U = !more.(?0.U + ?1.!stop.?end)
+type V = ?more.(!0.V ⊕ !1.?stop.!end)
+
+A(x : S) = x?{more: x!{0: A⟨x⟩, 1: A⟨x⟩}, stop: close x}
+B(x : U) = x!more.x?{0: B⟨x⟩, 1: x!stop.wait x.done}
+Main     = new (x : V) ⌈x : S⌉ A⟨x⟩ in B⟨x⟩

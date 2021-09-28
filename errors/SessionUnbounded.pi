@@ -1,0 +1,4 @@
+Main =
+    new (x : !{a: ?end, b: !end})
+        x!{a: wait x.Main, b: close x}
+    in  x?{a: close x, b: wait x.Main}

@@ -1,0 +1,16 @@
+
+type T' = !add.!{add: T', pay: !end}
+type T  = !{add: T, pay: !end}
+type S  = ?{add: S, pay: ?end}
+
+Acquirer(x : T') = x!add.x!{add: Acquirer⟨x⟩, pay: close x }
+
+Business(x : S, y : !ship.!end) =
+  x?{add: Business⟨x, y⟩, pay: wait x.y!ship.close y }
+
+Carrier(y : ?ship.?end) = y?ship.wait y.done
+
+Main =
+    new (y : !ship.!end)
+        new (x : T) ⌈x : T'⌉ Acquirer⟨x⟩ in Business⟨x, y⟩
+    in Carrier⟨y⟩

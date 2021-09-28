@@ -1,0 +1,3 @@
+B₂ = new (x : !a.!end ⊕ !b.?end)
+         x!{a: close x, b: wait x.B₂}
+     in  x?{a: wait x.B₂, b: close x}
