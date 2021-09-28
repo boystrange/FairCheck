@@ -123,7 +123,7 @@ the session endpoint used by `P` must be provided, whereas the endpoint used by
 
 Example 6.1 claims that this program is well typed. To verify the claim we run
 `FairCheck` specifying the file that contains the program to type check.
-Hereafter, `$` represents the shell prompt and proceeds the command being
+Hereafter, `$` represents the shell prompt and preceeds the command being
 issued, whereas any subsequent text is the output produced by `FairCheck`.
 
 ``` bash
