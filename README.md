@@ -190,13 +190,12 @@ which we now verify using `FairCheck`.
 
 ``` bash
 $ faircheck artifact/equation_3_B.pi
-NO: action-unbounded process: B@1
+NO: action-unbounded process: B [line 1]
 ```
 
 The `NO` output indicates that the program is ill typed and the subsequent
 message provides details about (one of) the errors that have been found. In this
-case, the error indicates that the process `B` is action unbounded. The number
-after the `@` sign indicates the line number where the error was detected.
+case, the error indicates that the process `B` is action unbounded.
 
 ### Claim 4
 
@@ -221,7 +220,7 @@ is therefore ruled out by the type system.
 
 ``` bash
 $ faircheck artifact/linearity_violation_B.pi
-NO: action-unbounded process: B@3
+NO: action-unbounded process: B [line 3]
 ```
 
 A conventional session type system that does not enforce action boundedness may
@@ -253,7 +252,7 @@ Just like `B`, also `A` declares that `y` is used according to the session type
 
 ``` bash
 $ faircheck artifact/linearity_violation_A.pi
-NO: linearity violation: y@3
+NO: linearity violation: y [line 3]
 ```
 
 ### Claim 5
@@ -293,7 +292,7 @@ checking or else we would not be able to see the session unboundedness error.
 
 ``` bash
 $ faircheck -a artifact/equation_4_B.pi
-NO: session-unbounded process: B₁@1 creates x@1
+NO: session-unbounded process: B₁ [line 1] creates x [line 1]
 ```
 
 `FairCheck` reports not only the name `B₁` of the process definition that has
@@ -314,7 +313,7 @@ parallel has a non-recursive branch) but also session unbounded.
 
 ``` bash
 $ faircheck artifact/equation_5.pi
-NO: session-unbounded process: B₂@1 creates x@1
+NO: session-unbounded process: B₂ [line 1] creates x [line 1]
 ```
 
 ### Claim 6
@@ -379,7 +378,7 @@ discussed here is flagged as cast unbounded.
 
 ``` bash
 $ faircheck -a artifact/equation_7.pi
-NO: cast-unbounded process: A@4 casts x@4
+NO: cast-unbounded process: A [line 4] casts x [line 4]
 ```
 
 The error message provides information about the location of the cast that
@@ -408,7 +407,7 @@ perform an unbounded number of casts in order to terminate.
 
 ``` bash
 $ faircheck artifact/equation_8.pi
-NO: cast-unbounded process: A@5 casts x@5
+NO: cast-unbounded process: A [line 5] casts x [line 5]
 ```
 
 We can run `FairCheck` with the `-b` option to verify that the program is
@@ -441,7 +440,7 @@ but also ill typed because the two casts it performs are invalid.
 
 ``` bash
 $ faircheck artifact/equation_9.pi
-NO: invalid cast for x@8: rec X₄.!{ more: ?{ more: X₄, stop: ?end }, stop: !end } is not a fair subtype of rec X₃.!more.?{ more: X₃, stop: ?end }
+NO: invalid cast for x [line 8]: rec X₄.!{ more: ?{ more: X₄, stop: ?end }, stop: !end } is not a fair subtype of rec X₃.!more.?{ more: X₃, stop: ?end }
 ```
 
 Since `FairCheck` internally represents session types as regular trees, the

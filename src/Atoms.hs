@@ -24,7 +24,7 @@ data Pos = Somewhere
 
 instance Show Pos where
   show Somewhere = ""
-  show (At (l, c)) = "@" ++ show l
+  show (At (l, c)) = " [line " ++ show l ++ "]"
 
 -- LOCATED IDENTIFIERS
 
