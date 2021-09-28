@@ -1,9 +1,9 @@
 # Fair termination of binary sessions - Artifact
 
 This is the documentation for `FairCheck`, an implementation of the type system
-described in the paper *Fair termination of binary sessions* submitted to POPL
-2022 (submission #30). `FairCheck` reads a program from a script and makes sure
-that:
+described in the paper *Fair termination of binary sessions* submitted to [POPL
+2022](https://popl22.sigplan.org) (submission #30). `FairCheck` reads a program
+from a script and makes sure that:
 
 1. There exists a **typing derivation** for each definition in the program using
    the algorithmic version of the typing rules described in the paper (Section
@@ -135,7 +135,7 @@ The `OK` output indicates that the program is well typed.
 
 ### Claim 2
 
-The *random bit generator* program described in Example 6.3 is contained in the
+The *random bit generator* program described in Example 6.3 is defined in the
 script [`random_bit_generator.pi`](artifact/random_bit_generator.pi) and shown
 below (in the submitted version of the paper, the `B` process also uses a
 session endpoint `y` which is omitted in the script so that the program is self
@@ -196,8 +196,7 @@ NO: action-unbounded process: B@1
 The `NO` output indicates that the program is ill typed and the subsequent
 message provides details about (one of) the errors that have been found. In this
 case, the error indicates that the process `B` is action unbounded. The number
-after the `@` sign indicates, sometimes approximately, the line number where the
-error was detected.
+after the `@` sign indicates the line number where the error was detected.
 
 ### Claim 4
 
