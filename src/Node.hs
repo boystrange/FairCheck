@@ -30,7 +30,7 @@ import Atoms ( Polarity(..), Label, dualP )
 
 data Merge u v = OnlyLeft u | OnlyRight v | Both u v
   deriving (Eq, Ord)
-  
+
 diffMap :: Ord k => Map k a -> Map k b -> Map k (Merge a b)
 diffMap = Merge.merge aux Merge.dropMissing (Merge.zipWithMatched (const Both))
   where

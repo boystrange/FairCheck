@@ -144,7 +144,7 @@ dual :: Ord u => Tree u -> Tree (Either u u)
 dual (Tree i m) = Tree (Right i) (disjointUnion ml mr)
   where
     ml = mapNodeMap Left (Node.map Left) m
-    mr = mapNodeMap Right Node.dual m    
+    mr = mapNodeMap Right Node.dual m
 
 difference :: (Ord u, Ord v) => Tree u -> Tree v -> Tree (Node.Merge u v)
 difference (Tree i1 m1) (Tree i2 m2) = Tree (Node.Both i1 i2) m
