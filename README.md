@@ -1,13 +1,14 @@
-# Fair termination of binary sessions - Artifact
+# Fair termination of binary sessions - artifact
 
-This is the documentation for `FairCheck`, an implementation of the type system
-described in the paper *Fair termination of binary sessions* submitted to [POPL
-2022](https://popl22.sigplan.org) (submission #30). `FairCheck` reads a program
-from a script and makes sure that:
+`FairCheck` is an implementation of the type system described in the paper *Fair
+termination of binary sessions* submitted to [POPL
+2022](https://popl22.sigplan.org) (submission #30). A draft version of the paper
+that describes the algorithmic version of the type system on which `FairCheck`
+is based is [available here](). `FairCheck` parses a distributed program modeled
+in a session-oriented variant of the π-calculus and verifies that:
 
 1. There exists a **typing derivation** for each definition in the program using
-   the algorithmic version of the typing rules described in the paper (Section
-   6).
+   the algorithmic version of the type system (Section 6 and Appendix F.1).
 2. Each process definition is **action bounded**, namely there exists a finite
    branch leading to termination (Section 5.1).
 3. Each process definition is **session bounded**, namely the number of sessions
@@ -17,8 +18,8 @@ from a script and makes sure that:
 
 ## List of claims
 
-Here is a list of claims made in the paper about the well- or ill-typing of some
-of the presented examples. Each claim is discussed in detail in the
+Here is a list of claims made in the paper about the well- or ill-typing of the
+key examples presented in the paper. Each claim is discussed in detail in the
 corresponding section below.
 
 1. [The *acquirer-business-carrier* program in Example 4.1 is well typed
@@ -151,7 +152,7 @@ B(x : U) = x!more.x?{0: B⟨x⟩, 1: x!stop.wait x.done}
 Main     = new (x : V) ⌈x : S⌉ A⟨x⟩ in B⟨x⟩
 ```
 
-Example 6.3 claims that this program is well typed:
+Example 6.3 claims that this program is well typed.
 
 ``` bash
 $ faircheck artifact/random_bit_generator.pi
@@ -161,24 +162,25 @@ OK
 ### Claim 3
 
 The purpose of the definitions in Eq. (3) is to illustrate the difference
-between **action-bounded** processes (which have a finite branch leading to
-termination) and **action-unbounded** processes (which have no such branch). The
-`A` process in Eq. (3) is an example of action-bounded process is defined in the
-script [`equation_3_A.pi`](artifact/equation_3_A.pi).
+between **action-bounded** processes, which have a finite branch leading to
+termination, and **action-unbounded** processes, which have no such branch. The
+process `A` in Eq. (3) is defined in the script
+[`equation_3_A.pi`](artifact/equation_3_A.pi).
 
 ``` pi
 A = A ⊕ done
 ```
 
 This process may nondeterministically reduce to itself or to `done` and is
-claimed to be action bounded. In fact, it is well typed.
+claimed to be action bounded thanks to the branch leading to `done`. In fact, it
+is well typed.
 
 ``` bash
 $ faircheck artifact/equation_3_A.pi
 OK
 ```
 
-The process `B` in the same Eq. (3) is contained in the script
+The process `B` in the same Eq. (3) is defined in the script
 [`equation_3_B.pi`](artifact/equation_3_B.pi).
 
 ``` pi
@@ -186,7 +188,7 @@ B = B ⊕ B
 ```
 
 This process can only reduce to itself and is claimed to be action unbounded,
-which we now verify using `FairCheck`.
+because it has no branch leading to termination.
 
 ``` bash
 $ faircheck artifact/equation_3_B.pi
@@ -195,15 +197,15 @@ NO: action-unbounded process: B [line 1]
 
 The `NO` output indicates that the program is ill typed and the subsequent
 message provides details about (one of) the errors that have been found. In this
-case, the error indicates that the process `B` is action unbounded.
+case, the error confirms that `B` is action unbounded.
 
 ### Claim 4
 
 The purpose of the process definitions at the end of Section 5.1 is to
 illustrate how action boundedness helps detecting programs that claim to use
 certain session endpoints in a certain way, while in fact they never do so. To
-illustrate this situation, consider the process `B` defined at the end of
-Section 5.1 and contained in the script
+illustrate this situation, consider the process `B` shown at the end of Section
+5.1 and defined in the script
 [`linearity_violation_B.pi`](artifact/linearity_violation_B.pi).
 
 ``` pi
@@ -247,8 +249,8 @@ A(x : S, y : !end) = x!{a: A⟨x, y⟩, b: close x}
 ```
 
 Just like `B`, also `A` declares that `y` is used according to the session type
-`!end`. This process is claimed to be ill typed, which is expected since the
-`b`-labeled branch of the label output form does not actually use `y`.
+`!end`. This process is claimed to be ill typed because the `b`-labeled branch
+of the label output form does not actually use `y`.
 
 ``` bash
 $ faircheck artifact/linearity_violation_A.pi
@@ -260,7 +262,7 @@ NO: linearity violation: y [line 3]
 The process definitions in Eq. (4) and Eq. (5) illustrate the difference between
 **session-bounded** and **session-unbounded** processes. In a session-bounded
 process, there is an upper bound to the number of sessions the process needs to
-create and complete in order to terminate.
+create in order to terminate.
 
 The script [`equation_4_A.pi`](artifact/equation_4_A.pi) contains the process
 `A` in Eq. (4).
@@ -270,8 +272,8 @@ A = (new (x : !end) close x in wait x.A) ⊕ done
 ```
 
 The process is claimed to be session bounded, because it does not need to create
-new sessions in order to terminate despite the fact that it *may* create a new
-session at each invocation. In fact, the program is well typed.
+any new session in order to terminate despite the fact that it *may* create a
+new session at each invocation. In fact, the program is well typed.
 
 ``` bash
 $ faircheck artifact/equation_4_A.pi
@@ -321,6 +323,11 @@ NO: session-unbounded process: B₂ [line 1] creates x [line 1]
 The script [`equation_6.pi`](artifact/equation_6.pi) contains the definitions of
 the program in Eq. (6), whose purpose is to show that a well-typed - hence
 session-bounded - process may still create an *unbounded* number of sessions.
+The process `A` discussed in [the previous section](#claim-5) is already such an
+example in which the created sessions are *chained* together, so that a new
+session may be created only after the previous ones have terminated. In this
+example sessions are *nested*, so that a session terminates only after all those
+created after it have terminated as well.
 
 ``` pi
 C(x : !end) = (new (y : !end) C⟨y⟩ in wait y.close x) ⊕ close x
@@ -372,9 +379,9 @@ OK
 
 Note that the option `-b` disables *both* session boundedness and cast
 boundedness checking. Nonetheless, `FairCheck` is able to distinguish the
-violation of each property independently. In particular, the program discussed
-in [Claim 6](#claim-6) has been flagged as session unbounded, whereas the one
-discussed here is flagged as cast unbounded.
+violation of each property independently. For example, both `B₁` and `B₂`
+discussed in [Claim 5](#claim-5) are flagged as session unbounded, whereas the
+one discussed here is flagged as cast unbounded.
 
 ``` bash
 $ faircheck -a artifact/equation_7.pi
@@ -476,24 +483,23 @@ their purpose.
 
 * [`Common.hs`](src/Common.hs): general-purpose functions not found in Haskell
   standard library
-* [`Atoms.hs`](src/Atoms.hs): data types for the representation of atomic
-  entities in scripts, such as **polarities** and **identifiers**
-* [`Exceptions.hs`](src/Exceptions.hs): definition and pretty printer for
-  `FairCheck`-specific syntax and typing **errors**
+* [`Atoms.hs`](src/Atoms.hs): representation of **identifiers** and
+  **polarities**
+* [`Exceptions.hs`](src/Exceptions.hs): `FairCheck`-specific syntax and typing
+  **errors**
+* [`Type.hs`](src/Type.hs): representation of **session types**
+* [`Process.hs`](src/Process.hs): representation of **processes**
+* [`Lexer.x`](src/Lexer.x): specification of the **lexical analyzer**
+* [`Parser.y`](src/Parser.y): specification of the **parser**
+* [`Resolver.hs`](src/Resolver.hs): expansion of session types into closed
+  recursive terms
 * [`Node.hs`](src/Node.hs) and [`Tree.hs`](src/Tree.hs): **regular tree
-  representation** of session types used during type checking
-* [`Type.hs`](src/Type.hs): external representation of **session types**
-* [`Process.hs`](src/Process.hs): representation of **processes** and process
-  definitions
-* [`Resolver.hs`](src/Resolver.hs): expansion of session types names into closed
-  representation using `rec`-notation
+  representation** of session types
 * [`Checker.hs`](src/Checker.hs): implementation of the **type checker**
-* [`Formula.hs`](src/Formula.hs): representation of **μ-calculus formulas** and
-  **model checker** used to decide fair subtyping
-* [`Predicate.hs`](src/Predicate.hs): auxiliary μ-calculus formulas used in the
-  decision algorithm for fair subtyping
-* [`Lexer.x`](src/Lexer.x): **lexical analyzer**
-* [`Parser.y`](src/Parser.y): **parser**
+* [`Formula.hs`](src/Formula.hs): implementation of **model checker** for the
+  **μ-calculus**
+* [`Predicate.hs`](src/Predicate.hs): **μ-calculus formulas** used in the
+  algorithm for fair subtyping
 * [`Relation.hs`](src/Relation.hs): implementation of **session type equality**,
   **unfair subtyping** and **fair subtyping** decision algorithms
 * [`Render.hs`](src/Render.hs): **pretty printer** for session types and error
