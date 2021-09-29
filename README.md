@@ -19,8 +19,8 @@ in a session-oriented variant of the π-calculus and verifies that:
 ## List of claims
 
 Here is a list of claims made in the paper about the well- or ill-typing of the
-key examples presented in the paper. Each claim is discussed in detail in the
-corresponding section below.
+key examples presented in the paper. Each claim is discussed and checked against
+the implementation of `FairCheck` in the corresponding section below.
 
 1. [The *acquirer-business-carrier* program in Example 4.1 is well typed
    (Example 6.1)](#claim-1)
@@ -50,7 +50,9 @@ cd FairCheck
 ```
 
 to enter the directory that contains the source code of `FairCheck` as well as
-the code of all of the examples that we are going to evaluate.
+the code of all of the examples that we are going to evaluate. This directory is
+in fact a [clone of `FairCheck` GitHub public
+repository](https://github.com/boystrange/FairCheck).
 
 To clean up all the auxiliary files produced by the compiler, to (re)generate
 and install the `FairCheck` executable, issue the command
@@ -59,12 +61,8 @@ and install the `FairCheck` executable, issue the command
 make clean && make && make install
 ```
 
-The compilation should take only a few seconds to complete. Note that the
-executable is installed into a local directory (usually `~/.local/bin`) that is
-already included in the `PATH` variable for the shell the Ubuntu image of this
-artifact. For standalone installations of `FairCheck`, it may be necessary to
-include the installation directory of the `stack` tool into `PATH`. To verify
-that the `FairCheck` executable has been built and is reachable, issue the
+The compilation should take only a few seconds to complete. To verify that the
+`FairCheck` executable has been built successfully and is reachable, issue the
 command
 
 ``` bash
@@ -72,10 +70,16 @@ faircheck
 ```
 
 to print the synopsis of `FairCheck` and a summary of the options it accepts. We
-will illustrate the effect of some of these options in the next section.
+will illustrate the effect of some of these options in the next section. Note
+that the `faircheck` executable is installed into a local directory (usually
+`~/.local/bin`) that is already included in the `PATH` variable for the shell
+the Ubuntu image of this artifact. For standalone installations of `FairCheck`,
+it may be necessary to add the installation directory of the `stack` tool to the
+`PATH` environment variable (run `stack path --local-bin` to obtain the full
+path of this directory).
 
 `FairCheck` includes a few examples of well- and ill-typed processes. To verify
-that they are correctly classified as such, issue the commands
+that they are correctly classified as such, issue the command
 
 ``` bash
 make check
