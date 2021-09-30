@@ -1,14 +1,16 @@
 # Fair termination of binary sessions - artifact
 
 `FairCheck` is an implementation of the type system described in the paper *Fair
-termination of binary sessions* submitted to [POPL
-2022](https://popl22.sigplan.org) (submission #30). A draft version of the paper
-that describes the algorithmic version of the type system on which `FairCheck`
-is based is [available here](). `FairCheck` parses a distributed program modeled
-in a session-oriented variant of the π-calculus and verifies that:
+termination of binary sessions* submitted to POPL 2022 (submission #30). A draft
+of the paper that also includes the algorithmic version of the type system on
+which `FairCheck` is based is [available here (external
+link)](http://www.di.unito.it/~padovani/assets/downloads/fair-termination.pdf).
+`FairCheck` parses a distributed program modeled in a session-oriented variant
+of the π-calculus and verifies that:
 
 1. There exists a **typing derivation** for each definition in the program using
-   the algorithmic version of the type system (Section 6 and Appendix F.1).
+   the algorithmic version of the type system (Section 6 of the paper and
+   Appendix F.1 of the supplement).
 2. Each process definition is **action bounded**, namely there exists a finite
    branch leading to termination (Section 5.1).
 3. Each process definition is **session bounded**, namely the number of sessions
@@ -41,9 +43,10 @@ the implementation of `FairCheck` in the corresponding section below.
 
 ## Download, installation, and sanity-testing
 
-The artifact is packaged in a [VirtualBox image]() running Ubuntu Linux 20.04
-LTS. Once the image has been downloaded and activated and the operating system
-has booted, open the terminal (grey icon on the left dock) and type
+The artifact is packaged in a [VirtualBox image **FIXME** (external link)]()
+running Ubuntu Linux 20.04 LTS and it has been tested using VirtualBox 6.1 on
+MacOS 11.6. Once the image has been downloaded and activated and the operating
+system has booted, open the terminal (grey icon on the left dock) and type
 
 ``` bash
 cd FairCheck
@@ -51,8 +54,8 @@ cd FairCheck
 
 to enter the directory that contains the source code of `FairCheck` as well as
 the code of all of the examples that we are going to evaluate. This directory is
-in fact a [clone of `FairCheck` GitHub public
-repository](https://github.com/boystrange/FairCheck).
+in fact a [clone of `FairCheck` GitHub public repository (external
+link)](https://github.com/boystrange/FairCheck).
 
 To clean up all the auxiliary files produced by the compiler, to (re)generate
 and install the `FairCheck` executable, issue the command
@@ -62,7 +65,7 @@ make clean && make && make install
 ```
 
 The compilation should take only a few seconds to complete. To verify that the
-`FairCheck` executable has been built successfully and is reachable, issue the
+`FairCheck` executable has been built and installed successfully, issue the
 command
 
 ``` bash
@@ -71,12 +74,11 @@ faircheck
 
 to print the synopsis of `FairCheck` and a summary of the options it accepts. We
 will illustrate the effect of some of these options in the next section. Note
-that the `faircheck` executable is installed into a local directory (usually
-`~/.local/bin`) that is already included in the `PATH` variable for the shell
-the Ubuntu image of this artifact. For standalone installations of `FairCheck`,
-it may be necessary to add the installation directory of the `stack` tool to the
-`PATH` environment variable (run `stack path --local-bin` to obtain the full
-path of this directory).
+that the executable is installed into a hidden local directory `~/.local/bin`
+that is already included in the `PATH` variable for the terminal shell. For
+standalone installations of `FairCheck`, it may be necessary to add the
+installation directory of the `stack` tool to the `PATH` environment variable
+(run `stack path --local-bin` to obtain the full path of this directory).
 
 `FairCheck` includes a few examples of well- and ill-typed processes. To verify
 that they are correctly classified as such, issue the command
@@ -129,7 +131,8 @@ the session endpoint used by `P` must be provided, whereas the endpoint used by
 Example 6.1 claims that this program is well typed. To verify the claim we run
 `FairCheck` specifying the file that contains the program to type check.
 Hereafter, `$` represents the shell prompt and preceeds the command being
-issued, whereas any subsequent text is the output produced by `FairCheck`.
+issued, whereas any text in the subsequent lines is the output produced by
+`FairCheck`.
 
 ``` bash
 $ faircheck artifact/acquirer_business_carrier.pi
@@ -481,9 +484,19 @@ OK
 
 ## Additional artifact description
 
-The Haskell source code of `FairCheck` can be found in the [`src` folder](src).
-Below is a list of the modules contained therein with a brief description of
-their purpose.
+The `FairCheck` directory is structured in this way:
+
+* [`README.md`](README.md): this document
+* [`src`](src): Haskell source code of `FairCheck`
+* [`examples`](examples): a few examples of well-typed programs, all of which
+  have also been discussed in the previous sections
+* [`errors`](errors): fairly exhaustive set of ill-typed programs aimed at
+  testing all of the errors that can be detected by `FairCheck`. Some (but not
+  all) of these programs have been discussed in the previous sections.
+* [`artifact`](artifact): all of the programs discussed in the previous
+  sections. This is a mixed bag of well- and ill-typed programs.
+
+The source code of `FairCheck` is structured into the following modules:
 
 * [`Common.hs`](src/Common.hs): general-purpose functions not found in Haskell
   standard library
