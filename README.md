@@ -95,9 +95,11 @@ window, it may be necessary to scroll the window up to see the whole list of
 analyzed programs, divided into those that are well typed and those that are
 not.
 
-Should it be useful, please note that the present document can be visualized
-from within the virtual machine by clicking on the FireFox icon in the dock on
-the left-hand side of the screen.
+Should it be useful, please note that the present document can be visualized [on
+GitHub (external
+link)](https://github.com/boystrange/FairCheck/blob/master/README.md) or from
+within the virtual machine by clicking on the FireFox icon in the dock on the
+left-hand side of the screen.
 
 ## Evaluation instructions
 
