@@ -95,6 +95,10 @@ window, it may be necessary to scroll the window up to see the whole list of
 analyzed programs, divided into those that are well typed and those that are
 not.
 
+Should it be useful, please note that the present document can be visualized
+from within the virtual machine by clicking on the FireFox icon in the dock on
+the left-hand side of the screen.
+
 ## Evaluation instructions
 
 ### Claim 1
