@@ -131,8 +131,8 @@ process needs to perform in order to terminate is bounded (Section 5.3).</li>
 </ol>
 <h2 id="list-of-claims">List of claims</h2>
 <p>Here is a list of claims made in the paper about the well- or ill-typing of the
-key examples presented in the paper. Each claim is discussed and checked against
-the implementation of <code>FairCheck</code> in the corresponding section below.</p>
+key examples presented in the paper. Each claim will be discussed and checked
+against the implementation of <code>FairCheck</code> in the corresponding section below.</p>
 <ol>
 <li><a href="#claim-1">The <em>acquirer-business-carrier</em> program in Example 4.1 is well typed
 (Example 6.1)</a></li>
@@ -189,9 +189,11 @@ indicates that the program is ill typed. Depending on the size of the terminal
 window, it may be necessary to scroll the window up to see the whole list of
 analyzed programs, divided into those that are well typed and those that are
 not.</p>
-<p>Should it be useful, please note that the present document can be visualized
-from within the virtual machine by clicking on the FireFox icon in the dock on
-the left-hand side of the screen.</p>
+<p>Should it be useful, please note that the present document can be visualized <a href="https://github.com/boystrange/FairCheck/blob/master/README.html">on
+GitHub (external
+link)</a> or from
+within the virtual machine by clicking on the FireFox icon in the dock on the
+left-hand side of the screen.</p>
 <h2 id="evaluation-instructions">Evaluation instructions</h2>
 <h3 id="claim-1">Claim 1</h3>
 <p>The running example used throughout the paper models an
@@ -230,8 +232,8 @@ OK
 <p>The <code>OK</code> output indicates that the program is well typed.</p>
 <h3 id="claim-2">Claim 2</h3>
 <p>The <em>random bit generator</em> program described in Example 6.3 is defined in the
-script <a href="artifact/random_bit_generator.pi"><code>random_bit_generator.pi</code></a> and shown
-below (in the submitted version of the paper, the <code>B</code> process also uses a
+script <a href="artifact/random_bit_generator.pi"><code>random_bit_generator.pi</code></a> and is
+shown below (in the submitted version of the paper, the <code>B</code> process also uses a
 session endpoint <code>y</code> which is omitted in the script so that the program is self
 contained).</p>
 <pre><code class="language-pi"><code><div>type S = ?more.(!0.S ⊕ !1.S) + ?stop.!end
@@ -360,16 +362,16 @@ session-bounded - process may still create an <em>unbounded</em> number of sessi
 The process <code>A</code> discussed in <a href="#claim-5">the previous section</a> is already such an
 example in which the created sessions are <em>chained</em> together, so that a new
 session may be created only after the previous ones have terminated. In this
-example sessions are <em>nested</em>, so that a session terminates only after all those
-created after it have terminated as well.</p>
+example we see that sessions may also be <em>nested</em>, so that a session terminates
+only after those created after it have terminated as well.</p>
 <pre><code class="language-pi"><code><div>C(x : !end) = (new (y : !end) C⟨y⟩ in wait y.close x) ⊕ close x
 Main        = new (x : !end) C⟨x⟩ in wait x.done
 </div></code></code></pre>
-<p>We can run <code>FairCheck</code> with the option <code>--verbose</code> not only to verify the claim
-that the program is well typed, but also to show the <strong>rank</strong> inferred by
-<code>FairCheck</code> of the process definitions contained therein. The rank of a process
-is an upper bound to the number of sessions the process needs to create and to
-the number of casts it needs to perform in order to terminate.</p>
+<p>We can run <code>FairCheck</code> with the option <code>--verbose</code> to verify the claim that the
+program is well typed and also to show the <strong>rank</strong> inferred by <code>FairCheck</code> of
+the process definitions contained therein. The rank of a process is an upper
+bound to the number of sessions the process needs to create and to the number of
+casts it needs to perform in order to terminate.</p>
 <pre><code class="language-bash"><div>$ faircheck --verbose artifact/equation_6.pi
 OK
 process C has rank 0
@@ -400,13 +402,13 @@ OK
 <p>Note that the option <code>-b</code> disables <em>both</em> session boundedness and cast
 boundedness checking. Nonetheless, <code>FairCheck</code> is able to distinguish the
 violation of each property independently. For example, both <code>B₁</code> and <code>B₂</code>
-discussed in <a href="#claim-5">Claim 5</a> are flagged as session unbounded, whereas the
-one discussed here is flagged as cast unbounded.</p>
+discussed in <a href="#claim-5">Claim 5</a> are flagged as session unbounded, whereas <code>A</code>
+discussed here is flagged as cast unbounded.</p>
 <pre><code class="language-bash"><div>$ faircheck -a artifact/equation_7.pi
 NO: cast-unbounded process: A [line 4] casts x [line 4]
 </div></code></pre>
-<p>The error message provides information about the location of the cast that
-causes <code>A</code> to be cast unbounded.</p>
+<p>The error message provides information about the location of the cast that makes
+<code>A</code> cast unbounded.</p>
 <h3 id="claim-8">Claim 8</h3>
 <p>The purpose of Eq. (8) is to show that, if a program is allowed to perform an
 unbounded number of casts, it may not terminate even if it is action bounded.
@@ -468,17 +470,17 @@ OK
 <h2 id="additional-artifact-description">Additional artifact description</h2>
 <p>The <code>FairCheck</code> directory is structured in this way:</p>
 <ul>
-<li><a href="README.html"><code>README.md</code></a>: this document</li>
 <li><a href="src"><code>src</code></a>: Haskell source code of <code>FairCheck</code></li>
-<li><a href="examples"><code>examples</code></a>: a few examples of well-typed programs, all of which
+<li><a href="examples"><code>examples</code></a>: some examples of well-typed programs, all of which
 have also been discussed in the previous sections</li>
-<li><a href="errors"><code>errors</code></a>: fairly exhaustive set of ill-typed programs aimed at
-testing all of the errors that can be detected by <code>FairCheck</code>. Some (but not
-all) of these programs have been discussed in the previous sections.</li>
+<li><a href="errors"><code>errors</code></a>: exhaustive set of ill-typed programs aimed at testing all
+of the errors that can be detected by <code>FairCheck</code>. Some (but not all) of these
+programs have been discussed in the previous sections.</li>
 <li><a href="artifact"><code>artifact</code></a>: all of the programs discussed in the previous
 sections. This is a mixed bag of well- and ill-typed programs.</li>
 </ul>
-<p>The source code of <code>FairCheck</code> is structured into the following modules:</p>
+<p>Within <a href="src"><code>src</code></a>, the source code of <code>FairCheck</code> is structured into the
+following modules:</p>
 <ul>
 <li><a href="src/Common.hs"><code>Common.hs</code></a>: general-purpose functions not found in Haskell
 standard library</li>
@@ -488,8 +490,8 @@ standard library</li>
 <strong>errors</strong></li>
 <li><a href="src/Type.hs"><code>Type.hs</code></a>: representation of <strong>session types</strong></li>
 <li><a href="src/Process.hs"><code>Process.hs</code></a>: representation of <strong>processes</strong></li>
-<li><a href="src/Lexer.x"><code>Lexer.x</code></a>: specification of the <strong>lexical analyzer</strong></li>
-<li><a href="src/Parser.y"><code>Parser.y</code></a>: specification of the <strong>parser</strong></li>
+<li><a href="src/Lexer.x"><code>Lexer.x</code></a>: Alex specification of the <strong>lexical analyzer</strong></li>
+<li><a href="src/Parser.y"><code>Parser.y</code></a>: Happy specification of the <strong>parser</strong></li>
 <li><a href="src/Resolver.hs"><code>Resolver.hs</code></a>: expansion of session types into closed
 recursive terms</li>
 <li><a href="src/Node.hs"><code>Node.hs</code></a> and <a href="src/Tree.hs"><code>Tree.hs</code></a>: <strong>regular tree
