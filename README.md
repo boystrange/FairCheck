@@ -21,8 +21,8 @@ of the π-calculus and verifies that:
 ## List of claims
 
 Here is a list of claims made in the paper about the well- or ill-typing of the
-key examples presented in the paper. Each claim is discussed and checked against
-the implementation of `FairCheck` in the corresponding section below.
+key examples presented in the paper. Each claim will be discussed and checked
+against the implementation of `FairCheck` in the corresponding section below.
 
 1. [The *acquirer-business-carrier* program in Example 4.1 is well typed
    (Example 6.1)](#claim-1)
@@ -150,8 +150,8 @@ The `OK` output indicates that the program is well typed.
 ### Claim 2
 
 The *random bit generator* program described in Example 6.3 is defined in the
-script [`random_bit_generator.pi`](artifact/random_bit_generator.pi) and shown
-below (in the submitted version of the paper, the `B` process also uses a
+script [`random_bit_generator.pi`](artifact/random_bit_generator.pi) and is
+shown below (in the submitted version of the paper, the `B` process also uses a
 session endpoint `y` which is omitted in the script so that the program is self
 contained).
 
@@ -339,19 +339,19 @@ session-bounded - process may still create an *unbounded* number of sessions.
 The process `A` discussed in [the previous section](#claim-5) is already such an
 example in which the created sessions are *chained* together, so that a new
 session may be created only after the previous ones have terminated. In this
-example sessions are *nested*, so that a session terminates only after all those
-created after it have terminated as well.
+example we see that sessions may also be *nested*, so that a session terminates
+only after those created after it have terminated as well.
 
 ``` pi
 C(x : !end) = (new (y : !end) C⟨y⟩ in wait y.close x) ⊕ close x
 Main        = new (x : !end) C⟨x⟩ in wait x.done
 ```
 
-We can run `FairCheck` with the option `--verbose` not only to verify the claim
-that the program is well typed, but also to show the **rank** inferred by
-`FairCheck` of the process definitions contained therein. The rank of a process
-is an upper bound to the number of sessions the process needs to create and to
-the number of casts it needs to perform in order to terminate.
+We can run `FairCheck` with the option `--verbose` to verify the claim that the
+program is well typed and also to show the **rank** inferred by `FairCheck` of
+the process definitions contained therein. The rank of a process is an upper
+bound to the number of sessions the process needs to create and to the number of
+casts it needs to perform in order to terminate.
 
 ``` bash
 $ faircheck --verbose artifact/equation_6.pi
@@ -393,16 +393,16 @@ OK
 Note that the option `-b` disables *both* session boundedness and cast
 boundedness checking. Nonetheless, `FairCheck` is able to distinguish the
 violation of each property independently. For example, both `B₁` and `B₂`
-discussed in [Claim 5](#claim-5) are flagged as session unbounded, whereas the
-one discussed here is flagged as cast unbounded.
+discussed in [Claim 5](#claim-5) are flagged as session unbounded, whereas `A`
+discussed here is flagged as cast unbounded.
 
 ``` bash
 $ faircheck -a artifact/equation_7.pi
 NO: cast-unbounded process: A [line 4] casts x [line 4]
 ```
 
-The error message provides information about the location of the cast that
-causes `A` to be cast unbounded.
+The error message provides information about the location of the cast that makes
+`A` cast unbounded.
 
 ### Claim 8
 
@@ -492,17 +492,17 @@ OK
 
 The `FairCheck` directory is structured in this way:
 
-* [`README.md`](README.md): this document
 * [`src`](src): Haskell source code of `FairCheck`
-* [`examples`](examples): a few examples of well-typed programs, all of which
+* [`examples`](examples): some examples of well-typed programs, all of which
   have also been discussed in the previous sections
-* [`errors`](errors): fairly exhaustive set of ill-typed programs aimed at
-  testing all of the errors that can be detected by `FairCheck`. Some (but not
-  all) of these programs have been discussed in the previous sections.
+* [`errors`](errors): exhaustive set of ill-typed programs aimed at testing all
+  of the errors that can be detected by `FairCheck`. Some (but not all) of these
+  programs have been discussed in the previous sections.
 * [`artifact`](artifact): all of the programs discussed in the previous
   sections. This is a mixed bag of well- and ill-typed programs.
 
-The source code of `FairCheck` is structured into the following modules:
+Within [`src`](src), the source code of `FairCheck` is structured into the
+following modules:
 
 * [`Common.hs`](src/Common.hs): general-purpose functions not found in Haskell
   standard library
@@ -512,8 +512,8 @@ The source code of `FairCheck` is structured into the following modules:
   **errors**
 * [`Type.hs`](src/Type.hs): representation of **session types**
 * [`Process.hs`](src/Process.hs): representation of **processes**
-* [`Lexer.x`](src/Lexer.x): specification of the **lexical analyzer**
-* [`Parser.y`](src/Parser.y): specification of the **parser**
+* [`Lexer.x`](src/Lexer.x): Alex specification of the **lexical analyzer**
+* [`Parser.y`](src/Parser.y): Happy specification of the **parser**
 * [`Resolver.hs`](src/Resolver.hs): expansion of session types into closed
   recursive terms
 * [`Node.hs`](src/Node.hs) and [`Tree.hs`](src/Tree.hs): **regular tree
