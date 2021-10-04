@@ -43,10 +43,11 @@ against the implementation of `FairCheck` in the corresponding section below.
 
 ## Download, installation, and sanity-testing
 
-The artifact is packaged in a [VirtualBox image **FIXME** (external link)]()
-running Ubuntu Linux 20.04 LTS and it has been tested using VirtualBox 6.1 on
-MacOS 11.6. Once the image has been downloaded and activated and the operating
-system has booted, open the terminal (grey icon on the left dock) and type
+The artifact is packaged in a [VirtualBox image (external
+link)](https://doi.org/10.5281/zenodo.5547687) running Ubuntu Linux 20.04 LTS
+and it has been tested using VirtualBox 6.1 on MacOS 11.6. Once the image has
+been downloaded and activated and the operating system has booted, open the
+terminal (grey icon on the left dock) and type
 
 ``` bash
 cd FairCheck
@@ -95,7 +96,7 @@ window, it may be necessary to scroll the window up to see the whole list of
 analyzed programs, divided into those that are well typed and those that are
 not.
 
-Should it be useful, please note that the present document can be visualized [on
+The present document with all working hyperlinks can also be visualized [on
 GitHub (external
 link)](https://github.com/boystrange/FairCheck/blob/master/README.md) or from
 within the virtual machine by clicking on the FireFox icon in the dock on the
