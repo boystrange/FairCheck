@@ -1,7 +1,7 @@
-# Fair termination of binary sessions - artifact
+# Fair Termination of Binary Sessions - Artifact
 
 `FairCheck` is an implementation of the type system described in the paper *Fair
-termination of binary sessions* submitted to POPL 2022 (submission #30). A draft
+Termination of Binary Sessions* submitted to POPL 2022 (submission #30). A draft
 of the paper that also includes the algorithmic version of the type system on
 which `FairCheck` is based is [available here (external
 link)](http://www.di.unito.it/~padovani/assets/downloads/fair-termination.pdf).
@@ -97,10 +97,9 @@ analyzed programs, divided into those that are well typed and those that are
 not.
 
 The present document with all working hyperlinks can also be visualized [on
-GitHub (external
-link)](https://github.com/boystrange/FairCheck/blob/master/README.md) or from
-within the virtual machine by clicking on the FireFox icon in the dock on the
-left-hand side of the screen.
+GitHub (external link)](https://github.com/boystrange/FairCheck) or from within
+the virtual machine by clicking on the FireFox icon in the dock on the left-hand
+side of the screen.
 
 ## Evaluation instructions
 
