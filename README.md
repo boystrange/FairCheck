@@ -43,11 +43,19 @@ against the implementation of `FairCheck` in the corresponding section below.
 
 ## Download, installation, and sanity-testing
 
-The artifact is packaged in a [VirtualBox image (external
-link)](https://doi.org/10.5281/zenodo.5547687) running Ubuntu Linux 20.04 LTS
-and it has been tested using VirtualBox 6.1 on MacOS 11.6. Once the image has
-been downloaded and activated and the operating system has booted, open the
-terminal (grey icon on the left dock) and type
+The artifact is [available on Zenodo (external
+link)](https://doi.org/10.5281/zenodo.5547687) as a VirtualBox image
+`FairCheck.ova` as well as an archive `FairCheck-master.zip`. The next two
+sub-sections describe the steps to be taken to compile and test the artifact in
+each case.
+
+### Using `FairCheck.ova`
+
+The virtual image runs Ubuntu Linux 20.04 LTS and contains all that is necessary
+in order to compile the source code of `FairCheck`; it has been tested using
+VirtualBox 6.1 on MacOS 11.6. Once the image has been downloaded and activated
+and the operating system has booted, open the terminal (grey icon on the left
+dock) and type
 
 ``` bash
 cd FairCheck
@@ -57,6 +65,36 @@ to enter the directory that contains the source code of `FairCheck` as well as
 the code of all of the examples that we are going to evaluate. This directory is
 in fact a [clone of `FairCheck` GitHub public repository (external
 link)](https://github.com/boystrange/FairCheck).
+
+Note that the present document with all working hyperlinks can also be
+visualized [on GitHub (external link)](https://github.com/boystrange/FairCheck)
+or from within the virtual machine by clicking on the FireFox icon in the dock
+on the left-hand side of the screen.
+
+### Using `FairCheck-master.zip`
+
+These instructions assume the use of MacOS with the [`homebrew` package manager
+(external link)](https://brew.sh) and a terminal running the `bash` shell. First
+of all, make sure that the Haskell compiler and the Haskell Tool Stack are
+installed. If not, issuing the command
+
+``` bash
+brew install haskell-stack
+```
+
+will install these tools. Unpacking the `.zip` archive downloaded from Zenodo
+will create a directory `FairCheck-master`. From the terminal, type
+
+``` bash
+cd FairCheck-master
+```
+
+to enter the directory that contains the source code of `FairCheck` as well as
+the code of all of the examples that we are going to evaluate. This directory is
+in fact a [clone of `FairCheck` GitHub public repository (external
+link)](https://github.com/boystrange/FairCheck).
+
+### Sanity-testing
 
 To clean up all the auxiliary files produced by the compiler, to (re)generate
 and install the `FairCheck` executable, issue the command
@@ -76,10 +114,11 @@ faircheck
 to print the synopsis of `FairCheck` and a summary of the options it accepts. We
 will illustrate the effect of some of these options in the next section. Note
 that the executable is installed into a hidden local directory `~/.local/bin`
-that is already included in the `PATH` variable for the terminal shell. For
-standalone installations of `FairCheck`, it may be necessary to add the
-installation directory of the `stack` tool to the `PATH` environment variable
-(run `stack path --local-bin` to obtain the full path of this directory).
+that is already included in the `PATH` variable for the terminal shell in the
+virtual image. In case `FairCheck` is compiled from the `.zip` archive, it may
+be necessary to add the installation directory of the `stack` tool to the `PATH`
+environment variable (run `stack path --local-bin` to obtain the full path of
+this directory).
 
 `FairCheck` includes a few examples of well- and ill-typed processes. To verify
 that they are correctly classified as such, issue the command
@@ -95,11 +134,6 @@ indicates that the program is ill typed. Depending on the size of the terminal
 window, it may be necessary to scroll the window up to see the whole list of
 analyzed programs, divided into those that are well typed and those that are
 not.
-
-The present document with all working hyperlinks can also be visualized [on
-GitHub (external link)](https://github.com/boystrange/FairCheck) or from within
-the virtual machine by clicking on the FireFox icon in the dock on the left-hand
-side of the screen.
 
 ## Evaluation instructions
 

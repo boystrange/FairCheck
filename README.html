@@ -152,17 +152,43 @@ boundedness was not enforced (Section 5.3)</a></li>
 (Section 5.3)</a></li>
 </ol>
 <h2 id="download-installation-and-sanity-testing">Download, installation, and sanity-testing</h2>
-<p>The artifact is packaged in a <a href="https://doi.org/10.5281/zenodo.5547687">VirtualBox image (external
-link)</a> running Ubuntu Linux 20.04 LTS
-and it has been tested using VirtualBox 6.1 on MacOS 11.6. Once the image has
-been downloaded and activated and the operating system has booted, open the
-terminal (grey icon on the left dock) and type</p>
+<p>The artifact is <a href="https://doi.org/10.5281/zenodo.5547687">available on Zenodo (external
+link)</a> as a VirtualBox image
+<code>FairCheck.ova</code> as well as an archive <code>FairCheck-master.zip</code>. The next two
+sub-sections describe the steps to be taken to compile and test the artifact in
+each case.</p>
+<h3 id="using-faircheckova">Using <code>FairCheck.ova</code></h3>
+<p>The virtual image runs Ubuntu Linux 20.04 LTS and contains all that is necessary
+in order to compile the source code of <code>FairCheck</code>; it has been tested using
+VirtualBox 6.1 on MacOS 11.6. Once the image has been downloaded and activated
+and the operating system has booted, open the terminal (grey icon on the left
+dock) and type</p>
 <pre><code class="language-bash"><div><span class="hljs-built_in">cd</span> FairCheck
 </div></code></pre>
 <p>to enter the directory that contains the source code of <code>FairCheck</code> as well as
 the code of all of the examples that we are going to evaluate. This directory is
 in fact a <a href="https://github.com/boystrange/FairCheck">clone of <code>FairCheck</code> GitHub public repository (external
 link)</a>.</p>
+<p>Note that the present document with all working hyperlinks can also be
+visualized <a href="https://github.com/boystrange/FairCheck">on GitHub (external link)</a>
+or from within the virtual machine by clicking on the FireFox icon in the dock
+on the left-hand side of the screen.</p>
+<h3 id="using-faircheck-masterzip">Using <code>FairCheck-master.zip</code></h3>
+<p>These instructions assume the use of MacOS with the <a href="https://brew.sh"><code>homebrew</code> package manager
+(external link)</a> and a terminal running the <code>bash</code> shell. First
+of all, make sure that the Haskell compiler and the Haskell Tool Stack are
+installed. If not, issuing the command</p>
+<pre><code class="language-bash"><div>brew install haskell-stack
+</div></code></pre>
+<p>will install these tools. Unpacking the <code>.zip</code> archive downloaded from Zenodo
+will create a directory <code>FairCheck-master</code>. From the terminal, type</p>
+<pre><code class="language-bash"><div><span class="hljs-built_in">cd</span> FairCheck-master
+</div></code></pre>
+<p>to enter the directory that contains the source code of <code>FairCheck</code> as well as
+the code of all of the examples that we are going to evaluate. This directory is
+in fact a <a href="https://github.com/boystrange/FairCheck">clone of <code>FairCheck</code> GitHub public repository (external
+link)</a>.</p>
+<h3 id="sanity-testing">Sanity-testing</h3>
 <p>To clean up all the auxiliary files produced by the compiler, to (re)generate
 and install the <code>FairCheck</code> executable, issue the command</p>
 <pre><code class="language-bash"><div>make clean &amp;&amp; make &amp;&amp; make install
@@ -175,10 +201,11 @@ command</p>
 <p>to print the synopsis of <code>FairCheck</code> and a summary of the options it accepts. We
 will illustrate the effect of some of these options in the next section. Note
 that the executable is installed into a hidden local directory <code>~/.local/bin</code>
-that is already included in the <code>PATH</code> variable for the terminal shell. For
-standalone installations of <code>FairCheck</code>, it may be necessary to add the
-installation directory of the <code>stack</code> tool to the <code>PATH</code> environment variable
-(run <code>stack path --local-bin</code> to obtain the full path of this directory).</p>
+that is already included in the <code>PATH</code> variable for the terminal shell in the
+virtual image. In case <code>FairCheck</code> is compiled from the <code>.zip</code> archive, it may
+be necessary to add the installation directory of the <code>stack</code> tool to the <code>PATH</code>
+environment variable (run <code>stack path --local-bin</code> to obtain the full path of
+this directory).</p>
 <p><code>FairCheck</code> includes a few examples of well- and ill-typed processes. To verify
 that they are correctly classified as such, issue the command</p>
 <pre><code class="language-bash"><div>make check
@@ -190,10 +217,6 @@ indicates that the program is ill typed. Depending on the size of the terminal
 window, it may be necessary to scroll the window up to see the whole list of
 analyzed programs, divided into those that are well typed and those that are
 not.</p>
-<p>The present document with all working hyperlinks can also be visualized <a href="https://github.com/boystrange/FairCheck">on
-GitHub (external link)</a> or from within
-the virtual machine by clicking on the FireFox icon in the dock on the left-hand
-side of the screen.</p>
 <h2 id="evaluation-instructions">Evaluation instructions</h2>
 <h3 id="claim-1">Claim 1</h3>
 <p>The running example used throughout the paper models an
