@@ -8,10 +8,11 @@
 # A snapshot resolver dictates the compiler version and the set of packages
 # to be used for project dependencies. For example:
 #
-resolver: lts-18.13
+# resolver: lts-18.8
 # resolver: lts-3.5
 # resolver: nightly-2015-09-21
 # resolver: ghc-7.10.2
+resolver: ghc-8.10.7
 #
 # The location of a snapshot can be provided as a file or url. Stack assumes
 # a snapshot provided as a file might change, whereas a url resource does not.
@@ -42,6 +43,13 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 #
 # extra-deps: []
+extra-deps:
+- alex-3.2.6
+- happy-1.20.0
+- prettyprinter-1.7.0
+- prettyprinter-ansi-terminal-1.1.2
+- ansi-terminal-0.11
+- colour-2.3.6
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

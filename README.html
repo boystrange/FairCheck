@@ -154,7 +154,7 @@ boundedness was not enforced (Section 5.3)</a></li>
 <h2 id="download-installation-and-sanity-testing">Download, installation, and sanity-testing</h2>
 <p>The artifact is <a href="https://doi.org/10.5281/zenodo.5547687">available on Zenodo (external
 link)</a> as a VirtualBox image
-<code>FairCheck.ova</code> as well as an archive <code>FairCheck-master.zip</code>. The next two
+<code>FairCheck.ova</code> as well as an archive <code>FairCheck-master.zip</code>. The next
 sub-sections describe the steps to be taken to compile and test the artifact in
 each case.</p>
 <h3 id="using-faircheckova">Using <code>FairCheck.ova</code></h3>
@@ -177,7 +177,7 @@ on the left-hand side of the screen.</p>
 <p>These instructions assume the use of MacOS with the <a href="https://brew.sh"><code>homebrew</code> package manager
 (external link)</a> and a terminal running the <code>bash</code> shell. First
 of all, make sure that the Haskell compiler and the Haskell Tool Stack are
-installed. If not, issuing the command</p>
+installed. If not, issuing the commands</p>
 <pre><code class="language-bash"><div>brew install haskell-stack
 </div></code></pre>
 <p>will install these tools. Unpacking the <code>.zip</code> archive downloaded from Zenodo
@@ -188,6 +188,21 @@ will create a directory <code>FairCheck-master</code>. From the terminal, type</
 the code of all of the examples that we are going to evaluate. This directory is
 in fact a <a href="https://github.com/boystrange/FairCheck">clone of <code>FairCheck</code> GitHub public repository (external
 link)</a>.</p>
+<h3 id="using-faircheck-masterzip-on-an-m1-mac">Using <code>FairCheck-master.zip</code> on an M1 Mac</h3>
+<p>At the time this artifact is being evaluated, support for the Haskell compiler
+and the Haskell Tool Stack on M1 Macs is not completely aligned with that of
+other architectures. In particular, it may be necessary to use a different
+configuration file for the Haskell Tool Stack to compile the artifact on an M1
+Mac. To this aim, in addition to the installation instructions above, install
+the Haskell compiler globally with the command</p>
+<pre><code class="language-bash"><div>brew install ghc
+</div></code></pre>
+<p>then edit the <a href="Makefile"><code>Makefile</code></a> and change the topmost line</p>
+<pre><code class="language-make"><code><div>YAML = stack.yaml
+</div></code></code></pre>
+<p>to</p>
+<pre><code class="language-make"><code><div>YAML = stack_m1.yaml
+</div></code></code></pre>
 <h3 id="sanity-testing">Sanity-testing</h3>
 <p>To clean up all the auxiliary files produced by the compiler, to (re)generate
 and install the <code>FairCheck</code> executable, issue the command</p>

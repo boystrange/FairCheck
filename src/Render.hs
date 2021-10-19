@@ -27,9 +27,9 @@ import Atoms
 import Prelude hiding ((<>))
 import Type (Type)
 import qualified Type
-import Data.Text.Prettyprint.Doc
-import qualified Data.Text.Prettyprint.Doc.Render.String as PR
-import qualified Data.Text.Prettyprint.Doc.Render.Terminal as PT
+import Prettyprinter
+import qualified Prettyprinter.Render.String as PR
+import qualified Prettyprinter.Render.Terminal as PT
 import qualified Data.Map as Map
 import qualified Data.Set as S
 

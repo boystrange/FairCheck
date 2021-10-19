@@ -1,5 +1,5 @@
 .stack-work
-stack.yaml.lock
+*.lock
 dist
 src/Parser.hs
 src/Parser.info

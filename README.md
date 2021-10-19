@@ -45,7 +45,7 @@ against the implementation of `FairCheck` in the corresponding section below.
 
 The artifact is [available on Zenodo (external
 link)](https://doi.org/10.5281/zenodo.5547687) as a VirtualBox image
-`FairCheck.ova` as well as an archive `FairCheck-master.zip`. The next two
+`FairCheck.ova` as well as an archive `FairCheck-master.zip`. The next
 sub-sections describe the steps to be taken to compile and test the artifact in
 each case.
 
@@ -76,7 +76,7 @@ on the left-hand side of the screen.
 These instructions assume the use of MacOS with the [`homebrew` package manager
 (external link)](https://brew.sh) and a terminal running the `bash` shell. First
 of all, make sure that the Haskell compiler and the Haskell Tool Stack are
-installed. If not, issuing the command
+installed. If not, issuing the commands
 
 ``` bash
 brew install haskell-stack
@@ -93,6 +93,31 @@ to enter the directory that contains the source code of `FairCheck` as well as
 the code of all of the examples that we are going to evaluate. This directory is
 in fact a [clone of `FairCheck` GitHub public repository (external
 link)](https://github.com/boystrange/FairCheck).
+
+### Using `FairCheck-master.zip` on an M1 Mac
+
+At the time this artifact is being evaluated, support for the Haskell compiler
+and the Haskell Tool Stack on M1 Macs is not completely aligned with that of
+other architectures. In particular, it may be necessary to use a different
+configuration file for the Haskell Tool Stack to compile the artifact on an M1
+Mac. To this aim, in addition to the installation instructions above, install
+the Haskell compiler globally with the command
+
+``` bash
+brew install ghc
+```
+
+then edit the [`Makefile`](Makefile) and change the topmost line
+
+``` make
+YAML = stack.yaml
+```
+
+to
+
+``` make
+YAML = stack_m1.yaml
+```
 
 ### Sanity-testing
 

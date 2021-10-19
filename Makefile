@@ -1,16 +1,18 @@
 
+YAML   = stack_m1.yaml
 TESTS  = $(wildcard examples/*.pi)
 ERRORS = $(wildcard errors/*.pi)
 DEST   = padovani@pianeta.di.unito.it:public_html/Software/FairCheck/
+STACK  = stack --stack-yaml $(YAML)
 
 all:
-	@stack build
+	@$(STACK) build
 
 watch:
-	@stack build --file-watch
+	@$(STACK) build --file-watch
 
 install:
-	@stack install
+	@$(STACK) install
 
 dist:
 	@cabal sdist
@@ -21,7 +23,7 @@ sync:
 	@scp dist/*.tar.gz $(DEST)
 
 info:
-	@stack exec happy -- -i src/Parser.y
+	@$(STACK) exec happy -- -i src/Parser.y
 
 %.check_ok:
 	@faircheck --log $(@:%.check_ok=%) || echo
@@ -55,5 +57,5 @@ check: check_examples check_errors
 .PHONY: dist clean check check_examples check_errors
 
 clean:
-	@stack clean
-	@rm -f `stack path --local-bin`/faircheck
+	@$(STACK) clean
+	@rm -f `$(STACK) path --local-bin`/faircheck
