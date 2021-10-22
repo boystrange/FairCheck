@@ -1,15 +1,30 @@
-
-YAML   = stack_m1.yaml
-TESTS  = $(wildcard examples/*.pi)
-ERRORS = $(wildcard errors/*.pi)
-DEST   = padovani@pianeta.di.unito.it:public_html/Software/FairCheck/
-STACK  = stack --stack-yaml $(YAML)
+YAML    = stack_m1.yaml
+TESTS   = $(wildcard examples/*.pi)
+ERRORS  = $(wildcard errors/*.pi)
+DEST    = padovani@pianeta.di.unito.it:public_html/Software/FairCheck/
+STACK   = stack --stack-yaml $(YAML)
+NULL    =
+SOURCES = \
+  Atoms.hs \
+  Checker.hs \
+  Common.hs \
+  Exceptions.hs \
+  Formula.hs \
+  Node.hs \
+  Predicate.hs \
+  Process.hs \
+  Relation.hs \
+  Render.hs \
+  Resolver.hs \
+  Tree.hs \
+  Type.hs \
+  $(NULL)
 
 all:
 	@$(STACK) build
 
-doc:
-	@$(STACK) exec haddock -- --hide Parser --html -o docs src/*.hs
+docs:
+	@$(STACK) exec haddock -- --hide Parser --ignore-link-symbol=Parser --html -o docs $(SOURCES:%=src/%)
 
 watch:
 	@$(STACK) build --file-watch
