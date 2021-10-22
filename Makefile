@@ -72,7 +72,7 @@ update_licence:
 check: check_examples check_errors
 	@echo
 
-.PHONY: dist clean check check_examples check_errors
+.PHONY: dist clean check check_examples check_errors docs
 
 clean:
 	@$(STACK) clean
