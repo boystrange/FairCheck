@@ -8,6 +8,9 @@ STACK  = stack --stack-yaml $(YAML)
 all:
 	@$(STACK) build
 
+doc:
+	@$(STACK) exec haddock -- --hide Parser --html -o docs src/*.hs
+
 watch:
 	@$(STACK) build --file-watch
 

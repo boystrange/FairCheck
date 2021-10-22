@@ -188,10 +188,13 @@ protocol `T`, the business protocol `S` and the dual of the business protocol
 `R`. Next are the process definitions corresponding to those of Example 4.1.
 Note that `FairCheck` implements a type checker, not a type reconstruction
 algorithm. Hence, **bound names** and **casts** must be **explicitly annotated**
-with session types. Also, for the sake of readability, **session restrictions**
-`(x)(P | Q)` are denoted by the form `new (x : S) P in Q`. Only the type `S` of
-the session endpoint used by `P` must be provided, whereas the endpoint used by
-`Q` is implicitly associated with the dual of `S`.
+with session types. For example, the declarations `x : T` in the definition of
+`A` and `y : !ship.!end` in the definition of `B` state that `x` and `y` have
+type `T` and `!ship.!end` respectively, in agreement with the global type
+assignments given in Example 6.1. Also, for the sake of readability, **session
+restrictions** `(x)(P | Q)` are denoted by the form `new (x : S) P in Q`. Only
+the type `S` of the session endpoint used by `P` must be provided, whereas the
+endpoint used by `Q` is implicitly associated with the dual of `S`.
 
 Example 6.1 claims that this program is well typed. To verify the claim we run
 `FairCheck` specifying the file that contains the program to type check.
