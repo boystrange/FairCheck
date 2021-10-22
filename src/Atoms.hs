@@ -15,10 +15,11 @@
 --
 -- Copyright 2021 Luca Padovani
 
+-- |This module defines the representation of *identifiers* of *polarities*.
 module Atoms where
 
--- POSITIONS
-
+-- |A position refers to line and column within a script. The special position
+-- 'Somewhere' refers to an unknown position.
 data Pos = Somewhere
          | At (Int, Int)
 
@@ -33,6 +34,8 @@ data TypeI
 data ChannelI
 data ProcessI
 
+-- |The 'Identifier' data type represents the occurrence of an identifier within
+-- a script. It is parametric in the kind 'k' of the identifier.
 data Identifier k = Identifier { identifierPos :: Pos
                                , identifierText :: String }
 instance Show (Identifier k) where
@@ -41,9 +44,11 @@ instance Show (Identifier k) where
 showWithPos :: Identifier k -> String
 showWithPos u = identifierText u ++ show (identifierPos u)
 
+-- |Two identifiers are the same regardless of the position in which they occur.
 instance Eq (Identifier k) where
   (==) u v = identifierText u == identifierText v
 
+-- |Two identifiers are ordered regardless of the position in which they occur.
 instance Ord (Identifier k) where
   compare u v = compare (identifierText u) (identifierText v)
 
@@ -52,11 +57,15 @@ type ChannelName = Identifier ChannelI
 type TypeName    = Identifier TypeI
 type ProcessName = Identifier ProcessI
 
--- POLARITIES
-
-data Polarity = In | Out
+-- |A polarity describes the kind of action performed on a channel.
+data Polarity
+  -- |Input action (question mark in the paper)
+  = In
+  -- |Output action (exclamation mark in the paper)
+  | Out
   deriving (Eq, Ord)
 
+-- |Compute the dual or opposite polarity.
 dualP :: Polarity -> Polarity
 dualP In = Out
 dualP Out = In
