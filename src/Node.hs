@@ -90,7 +90,7 @@ map _ (End pol) = End pol
 map f (Channel pol i j) = Channel pol (f i) (f j)
 map f (Label pol bm) = Label pol (Map.map f bm)
 
--- |Equality comparison between two nodes.
+-- |Equality comparison for nodes.
 equalityCmp :: (Ord u, Ord v) => Comparator u v
 equalityCmp (End p) (End q) | p == q = Just ([], [])
 equalityCmp (Channel p u1 u2) (Channel q v1 v2) | p == q = Just ([], [(u1, v1), (u2, v2)])
@@ -98,7 +98,7 @@ equalityCmp (Label p um) (Label q vm) | p == q
                                       , Map.keysSet um == Map.keysSet vm = Just ([], Prelude.map snd (Map.toList (zipMap um vm)))
 equalityCmp _ _ = Nothing
 
--- |Subtyping comparison between two nodes.
+-- |Subtyping comparison for nodes.
 subtypeCmp :: (Ord u, Ord v) => Comparator u v
 subtypeCmp (End p) (End q) | p == q = Just ([], [])
 subtypeCmp (Channel p u1 u2) (Channel q v1 v2) | p == q = Just ([(u1, v1)], [(u2, v2)])
