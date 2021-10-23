@@ -15,11 +15,12 @@
 --
 -- Copyright 2021 Luca Padovani
 
--- |This module defines the representation of *identifiers* of *polarities*.
+-- |This module defines the representation of __identifiers__ and
+-- __polarities__.
 module Atoms where
 
--- |A position refers to line and column within a script. The special position
--- 'Somewhere' refers to an unknown position.
+-- |A position refers to line and column within a script. The constructor
+-- 'Somewhere' builds an unknown position.
 data Pos = Somewhere
          | At (Int, Int)
 

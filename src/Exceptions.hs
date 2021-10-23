@@ -15,6 +15,7 @@
 --
 -- Copyright 2021 Luca Padovani
 
+-- |Representation of FairCheck-specific syntax and typing errors.
 module Exceptions where
 
 import Atoms

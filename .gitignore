@@ -5,3 +5,4 @@ src/Parser.hs
 src/Parser.info
 html/index.html
 *~
+docs/*

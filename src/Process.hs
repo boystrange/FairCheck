@@ -15,6 +15,7 @@
 --
 -- Copyright 2021 Luca Padovani
 
+-- |Representation of processes.
 module Process where
 
 import Atoms
@@ -24,16 +25,28 @@ import Data.Set (Set)
 import qualified Data.Set as Set
 
 data Process
+  -- |Terminated process.
   = Done
+  -- |Process invocation.
   | Call ProcessName [ChannelName]
+  -- |Receive session termination signal.
   | Wait ChannelName Process
+  -- |Send session termination signal.
   | Close ChannelName
+  -- |Input/output of channel.
   | Channel ChannelName Polarity ChannelName Process
+  -- |Input/output of label.
   | Label ChannelName Polarity [(Label, Process)]
+  -- |Session creation.
   | New ChannelName Type Process Process
+  -- |Non-deterministic choice. For the sake of simplicity and differently from
+  -- the paper, the annotation indicating which branch of the choice leads to
+  -- termination is always assumed to be 2.
   | Choice Process Process
+  -- |Use of fair subtyping.
   | Cast ChannelName Type Process
 
+-- |Set of free channel names occurring in a process.
 fn :: Process -> Set ChannelName
 fn Done = Set.empty
 fn (Call _ us) = Set.fromList us
@@ -45,6 +58,7 @@ fn (New u _ p q) = Set.delete u (Set.union (fn p) (fn q))
 fn (Choice p q) = Set.union (fn p) (fn q)
 fn (Cast u _ p) = Set.insert u (fn p)
 
+-- |Set of process names occurring in a process.
 pn :: Process -> Set ProcessName
 pn Done = Set.empty
 pn (Call pname _) = Set.singleton pname
@@ -56,6 +70,7 @@ pn (New _ _ p q) = Set.union (pn p) (pn q)
 pn (Choice _ p) = pn p
 pn (Cast _ _ p) = pn p
 
--- DEFINITIONS
-
+-- |A __process definition__ is a triple made of a process name, a list of name
+-- declarations and an optional process body. When the body is 'Nothing' the
+-- process is declared and assumed to be well typed but is left unspecified.
 type ProcessDef = (ProcessName, [(ChannelName, Type)], Maybe Process)
