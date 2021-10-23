@@ -15,6 +15,7 @@
 --
 -- Copyright 2021 Luca Padovani
 
+-- |Implementation of the type checker.
 module Checker where
 
 import Data.Map (Map)
@@ -37,9 +38,15 @@ import qualified Node
 import qualified Predicate
 import qualified Relation
 
+-- |A __context__ is a finite map from channel names to session types
+-- represented as regular trees.
 type Context = Map ChannelName (Tree Vertex)
+
+-- |The type of the function that decides whether two session types are related
+-- by subtyping.
 type Subtype = Tree Vertex -> Tree Vertex -> Bool
 
+-- |Compute the __rank__ of a process given a list of process definitions.
 rank :: [ProcessDef] -> Process -> Int
 rank pdefs = aux []
   where
@@ -61,6 +68,7 @@ rank pdefs = aux []
     aux pnames (Cast _ _ p) = 1 + aux pnames p
     aux pnames (Choice _ p) = aux pnames p
 
+-- |Check whether all process definitions are __action bounded__ (Section 5.1).
 checkActionBoundedness :: [ProcessDef] -> IO ()
 checkActionBoundedness pdefs = forM_ pdefs check
   where
@@ -74,6 +82,8 @@ checkActionBoundedness pdefs = forM_ pdefs check
 
     aux :: [ProcessName] -> Process -> Bool
     aux _ Done = True
+    -- If we encounter 'pname' after we have unfolded its definition once we
+    -- declare that it is unbounded
     aux pnames (Call pname _) | pname `elem` pnames = False
     aux pnames (Call pname _) =
       case Map.lookup pname pmap of
@@ -82,31 +92,49 @@ checkActionBoundedness pdefs = forM_ pdefs check
     aux pnames (Wait _ p) = aux pnames p
     aux _ (Close _) = True
     aux pnames (Channel _ _ _ p) = aux pnames p
+    -- The input/output of a label is action bounded if so is any of its
+    -- branches
     aux pnames (Label _ _ cs) = any (aux pnames . snd) cs
+    -- A new session is action bounded if so are the sub-processes using the two
+    -- endpoints of the session
     aux pnames (New _ _ p q) = aux pnames p && aux pnames q
     aux pnames (Cast _ _ p) = aux pnames p
     aux pnames (Choice _ p) = aux pnames p
 
+-- |Remove a channel from a context, returning the remaining context and the
+-- session type associated with the channel.
 remove :: Context -> ChannelName -> IO (Context, Tree Vertex)
 remove ctx x =
   case Map.lookup x ctx of
     Nothing -> throw $ ErrorUnknownIdentifier "channel" (showWithPos x)
     Just t -> return (Map.delete x ctx, t)
 
+-- |Compute the __process order__, which is the least preorder such that A ≤ B
+-- implies that A is invoked along a termination path in the definition of B.
 makeProcessOrder :: [ProcessDef] -> Set (ProcessName, ProcessName)
 makeProcessOrder pdefs = closure (Set.fromList [ (x, y) | (y, _, Just p) <- pdefs
                                                         , x <- Set.elems (pn p)])
 
+-- |Compute the map associating each process name with the list of session types
+-- associated with its free channel names, in the order they appear in the
+-- process definition.
 makeProcessContext :: [ProcessDef] -> Map ProcessName [Tree Vertex]
 makeProcessContext pdefs = Map.fromList [ (pname, map (Tree.fromType . snd) us) | (pname, us, _) <- pdefs ]
 
+-- |Check whether all process definitions are __session bounded__ and __cast
+-- bounded__.
 checkRanks :: [ProcessDef] -> IO ()
 checkRanks pdefs = do
+  -- We only need to check for session/cast boundedness for recursive processes,
+  -- namely those that invoke themselves.
   forM_ [ (x, p) | (x, _, Just p) <- pdefs, (x, x) `Set.member` order ] (uncurry check)
   where
     order :: Set (ProcessName, ProcessName)
     order = makeProcessOrder pdefs
 
+    -- Check that no session creations and no casts are encountered along any
+    -- termination path of the process. If this is the case, the process is
+    -- session and/or cast unbounded.
     check :: ProcessName -> Process -> IO ()
     check pname = aux
       where
@@ -118,33 +146,44 @@ checkRanks pdefs = do
         aux (Label _ _ cs) = forM_ cs (aux . snd)
         aux (New x _ _ _) = throw $ ErrorSessionUnbounded pname x
         aux (Cast x _ _) = throw $ ErrorCastUnbounded pname x
+        -- We implicitly assume that the branch of a non-deterministic choice
+        -- leading to termination is the right one, therefore the rank of a
+        -- non-deterministic choice is the rank of that branch.
         aux (Choice _ p) = aux p
 
+-- |Implementation of the type checking algorithm.
 checkTypes :: Subtype -> [ProcessDef] -> IO ()
 checkTypes subt pdefs = forM_ pdefs auxD
   where
     penv :: Map ProcessName [Tree Vertex]
     penv = makeProcessContext pdefs
 
+    -- Check that a process definition is well typed.
     auxD :: ProcessDef -> IO ()
     auxD (_, us, Nothing) = return ()
     auxD (_, us, Just p) = do
       let ctx = Map.fromListWithKey (\x _ _ -> throw $ ErrorMultipleNameDeclarations x) [ (u, Tree.fromType t) | (u, t) <- us ]
       auxP ctx p
 
+    -- Check that the context is empty. If not, there are some channels left
+    -- unused.
     checkEmpty :: Context -> IO ()
     checkEmpty ctx = unless (Map.null ctx) $ throw $ ErrorLinearity (Map.keys ctx)
 
+    -- Check whether two types are equal.
     checkTypeEq :: ChannelName -> Tree Vertex -> Tree Vertex -> IO ()
     checkTypeEq x g1 g2 = do
       unless (Relation.equality g1 g2) $ throw $ ErrorTypeMismatch x (show $ Tree.toType g1) (Tree.toType g2)
 
+    -- Return the list of session types associated with the free names of a
+    -- process name.
     checkProcess :: ProcessName -> IO [Tree Vertex]
     checkProcess pname =
       case Map.lookup pname penv of
         Nothing -> throw $ ErrorUnknownIdentifier "process" (showWithPos pname)
         Just gs -> return gs
 
+    -- Check that a process is well typed in a given context.
     auxP :: Context -> Process -> IO ()
     auxP ctx Done = checkEmpty ctx
     auxP ctx (Call pname us) = do

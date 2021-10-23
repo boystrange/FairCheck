@@ -46,7 +46,7 @@ data Process
   -- |Use of fair subtyping.
   | Cast ChannelName Type Process
 
--- |Set of free channel names occurring in a process.
+-- |Set of channel names occurring free in a process.
 fn :: Process -> Set ChannelName
 fn Done = Set.empty
 fn (Call _ us) = Set.fromList us
@@ -58,7 +58,7 @@ fn (New u _ p q) = Set.delete u (Set.union (fn p) (fn q))
 fn (Choice p q) = Set.union (fn p) (fn q)
 fn (Cast u _ p) = Set.insert u (fn p)
 
--- |Set of process names occurring in a process.
+-- |Set of process names occurring along the termination paths of a process.
 pn :: Process -> Set ProcessName
 pn Done = Set.empty
 pn (Call pname _) = Set.singleton pname
@@ -67,6 +67,9 @@ pn (Close _) = Set.empty
 pn (Channel _ _ _ p) = pn p
 pn (Label _ _ cs) = Set.unions (map (pn . snd) cs)
 pn (New _ _ p q) = Set.union (pn p) (pn q)
+-- Note that the set of process names of a non-deterministic choice coincides
+-- with that of its right branch. This is because we implicitly assume that the
+-- right branch is the one leading to termination.
 pn (Choice _ p) = pn p
 pn (Cast _ _ p) = pn p
 
