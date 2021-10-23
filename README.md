@@ -566,27 +566,27 @@ The `FairCheck` directory is structured in this way:
 Within [`src`](src), the source code of `FairCheck` is structured into the
 following modules:
 
-* [`Common.hs`](src/Common.hs): general-purpose functions not found in Haskell
+* [`Common`](src/Common.hs): general-purpose functions not found in Haskell
   standard library
-* [`Atoms.hs`](src/Atoms.hs): representation of **identifiers** and
+* [`Atoms`](src/Atoms.hs): representation of **identifiers** and
   **polarities**
-* [`Exceptions.hs`](src/Exceptions.hs): `FairCheck`-specific syntax and typing
+* [`Exceptions`](src/Exceptions.hs): `FairCheck`-specific syntax and typing
   **errors**
-* [`Type.hs`](src/Type.hs): representation of **session types**
-* [`Process.hs`](src/Process.hs): representation of **processes**
-* [`Lexer.x`](src/Lexer.x): Alex specification of the **lexical analyzer**
-* [`Parser.y`](src/Parser.y): Happy specification of the **parser**
-* [`Resolver.hs`](src/Resolver.hs): expansion of session types into closed
+* [`Type`](src/Type.hs): representation of **session types**
+* [`Process`](src/Process.hs): representation of **processes**
+* [`Lexer`](src/Lexer.x): Alex specification of the **lexical analyzer**
+* [`Parser`](src/Parser.y): Happy specification of the **parser**
+* [`Resolver`](src/Resolver.hs): expansion of session types into closed
   recursive terms
-* [`Node.hs`](src/Node.hs) and [`Tree.hs`](src/Tree.hs): **regular tree
+* [`Node`](src/Node.hs) and [`Tree`](src/Tree.hs): **regular tree
   representation** of session types
-* [`Checker.hs`](src/Checker.hs): implementation of the **type checker**
-* [`Formula.hs`](src/Formula.hs): implementation of **model checker** for the
+* [`Checker`](src/Checker.hs): implementation of the **type checker**
+* [`Formula`](src/Formula.hs): implementation of **model checker** for the
   **μ-calculus**
-* [`Predicate.hs`](src/Predicate.hs): **μ-calculus formulas** used in the
+* [`Predicate`](src/Predicate.hs): **μ-calculus formulas** used in the
   algorithm for fair subtyping
-* [`Relation.hs`](src/Relation.hs): implementation of **session type equality**,
+* [`Relation`](src/Relation.hs): implementation of **session type equality**,
   **unfair subtyping** and **fair subtyping** decision algorithms
-* [`Render.hs`](src/Render.hs): **pretty printer** for session types and error
+* [`Render`](src/Render.hs): **pretty printer** for session types and error
   messages
-* [`Main.hs`](src/Main.hs): main module and handler of command-line options
+* [`Main`](src/Main.hs): main module and handler of command-line options
