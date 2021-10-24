@@ -24,6 +24,7 @@ import Render
 import Control.Exception
 import qualified Data.List as List
 
+-- |The type of FairCheck exceptions.
 data MyException
   = ErrorSyntax String
   | ErrorMultipleTypeDefinitions TypeName

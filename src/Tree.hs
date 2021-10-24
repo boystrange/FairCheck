@@ -44,6 +44,7 @@ type NodeMap u = Map u (Node u)
 data Tree u = Tree u (NodeMap u)
   deriving (Show, Eq, Ord)
 
+-- |Representation of an action used to identify the children of a node.
 data Action u
   = LabelA Polarity Label
   | ChannelA Polarity

@@ -4,9 +4,8 @@
 Termination of Binary Sessions* submitted to POPL 2022 (submission #30). A draft
 of the paper that also includes the algorithmic version of the type system on
 which `FairCheck` is based is [available here (external
-link)](http://www.di.unito.it/~padovani/assets/downloads/fair-termination.pdf).
-`FairCheck` parses a distributed program modeled in a session-oriented variant
-of the π-calculus and verifies that:
+link)](paper/fair-termination.pdf). `FairCheck` parses a distributed program
+modeled in a session-oriented variant of the π-calculus and verifies that:
 
 1. There exists a **typing derivation** for each definition in the program using
    the algorithmic version of the type system (Section 6 of the paper and

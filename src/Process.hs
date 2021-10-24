@@ -24,6 +24,7 @@ import qualified Type
 import Data.Set (Set)
 import qualified Data.Set as Set
 
+-- |Representation of processes.
 data Process
   -- |Terminated process.
   = Done

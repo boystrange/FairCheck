@@ -15,6 +15,7 @@
 --
 -- Copyright 2021 Luca Padovani
 
+-- |Pretty printer for session types and error messages.
 module Render
   ( printTitle
   , printWarning
@@ -94,28 +95,35 @@ prettyType = annotate (PT.colorDull PT.Cyan) . aux
 instance Show Type where
   show = PR.renderString . layoutPretty defaultLayoutOptions . prettyType
 
+-- |Print a type.
 printType :: Type -> IO ()
 printType = PT.putDoc . prettyType
 
 -- AUXILIARY PRINTING OPERATIONS
 
+-- |Print a newline.
 printNewLine :: IO ()
 printNewLine = putStrLn ""
 
+-- |Print a string with style annotations.
 printAnnotatedString :: [PT.AnsiStyle] -> String -> IO ()
 printAnnotatedString anns msg = PT.putDoc (foldr annotate (pretty msg) anns)
 
+-- |Print a string as a title.
 printTitle :: String -> IO ()
 printTitle msg = printAnnotatedString [PT.bold, PT.underlined] msg >> printNewLine
 
+-- |Print a warning message.
 printWarning :: String -> IO ()
 printWarning msg = printAnnotatedString [PT.color PT.Red] msg >> printNewLine
 
+-- |Print an error message.
 printNO :: String -> IO ()
 printNO msg = do
   printAnnotatedString [PT.color PT.Red] "NO:"
   putStrLn $ " " ++ msg
 
+-- |Print a success message.
 printOK :: Maybe String -> IO ()
 printOK msg = do
   printAnnotatedString [PT.bold, PT.color PT.Green] "OK"

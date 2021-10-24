@@ -15,6 +15,8 @@
 --
 -- Copyright 2021 Luca Padovani
 
+-- |Implementation of session type equality, unfair subtyping and fair subtyping
+-- decision algorithms.
 module Relation (equality, subtype, fairSubtype) where
 
 import Data.Set (Set)
@@ -27,8 +29,12 @@ import qualified Tree
 import qualified Node
 import qualified Predicate
 
+-- |Shortcut for a binary relation over session types.
 type Relation u v = Tree u -> Tree v -> Bool
 
+-- |Generic coinductive relation over session types. The provided
+-- 'Tree.Comparator' is used to compute the list of pairs of subtrees that must
+-- be compared in turn.
 relation :: (Ord u, Ord v) => Tree.Comparator u v -> Relation u v
 relation cmp = aux Set.empty
   where
@@ -38,15 +44,19 @@ relation cmp = aux Set.empty
                    all (uncurry (aux (Set.insert (f, g) vset))) rs
     aux _ _ _ = False
 
+-- |Equality relation over session types.
 equality :: (Ord u, Ord v) => Relation u v
 equality = relation Tree.equalityCmp
 
+-- |Unfair subtyping relation over session types.
 subtype :: (Ord u, Ord v) => Relation u v
 subtype = relation Tree.subtypeCmp
 
+-- |Convergence relation over session types.
 converge :: (Ord u, Ord v) => Relation u v
 converge f g = not (Predicate.viable (Tree.difference f g))
 
+-- |Fair subtyping relation over session types.
 fairSubtype :: (Ord u, Ord v) => Relation u v
 fairSubtype = relation cmp
   where

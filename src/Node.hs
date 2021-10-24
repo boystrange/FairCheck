@@ -33,12 +33,14 @@ import Atoms ( Polarity(..), Label, dualP )
 data Merge u v = OnlyLeft u | OnlyRight v | Both u v
   deriving (Eq, Ord)
 
+-- |Compute the difference of two maps, keeping those elements found in the left
+-- map but not in the second, and pairing those elements found in both maps.
 diffMap :: Ord k => Map k a -> Map k b -> Map k (Merge a b)
 diffMap = Merge.merge aux Merge.dropMissing (Merge.zipWithMatched (const Both))
   where
     aux = Merge.mapMissing (const OnlyLeft)
 
--- |Representation of a node. The parameter 'u' is the type of node identifiers
+-- |Representation of a node. The type parameter is the type of node identifiers
 -- used for referring to other nodes.
 data Node u
   -- |Special node indicating a non-viable type.
