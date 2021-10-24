@@ -192,62 +192,111 @@ checkTypes subt pdefs = forM_ pdefs auxD
     auxP :: Context -> Process -> IO ()
     auxP ctx Done = checkEmpty ctx
     auxP ctx (Call pname us) = do
+      -- Retrive the list of types of the arguments of 'pname'
       gs <- checkProcess pname
+      -- If the expected and actual lists of arguments differ, the invocation is
+      -- illegal.
       unless (length us == length gs) $ throw $ ErrorArityMismatch pname (length gs) (length us)
+      -- Make sure that the actual arguments are exactly the names that occur in
+      -- the context.
       let ctx' = Map.fromList (zip us gs)
       let uset = Map.keysSet ctx
       let vset = Map.keysSet ctx'
       unless (uset == vset) $ throw $ ErrorLinearity $ Set.elems $ Set.union (Set.difference uset vset) (Set.difference vset uset)
+      -- Make sure that the expected and actual types of the argument match.
       forM_ (Map.toList (zipMap ctx' ctx)) $ \(x, (g1, g2)) -> checkTypeEq x g1 g2
     auxP ctx (Wait x p) = do
+      -- Remove the association for x from the context.
       (ctx, t) <- remove ctx x
+      -- Make sure that the type of x is ?end
       checkTypeEq x (Tree.fromType (Type.End In)) t
+      -- Type check the continuation.
       auxP ctx p
     auxP ctx (Close x) = do
+      -- Remove the association for x from the context.
       (ctx, t) <- remove ctx x
+      -- Make sure that the remaining context is empty.
       checkEmpty ctx
+      -- Make sure that the type of x is !end
       checkTypeEq x (Tree.fromType (Type.End Out)) t
     auxP ctx (Channel x In y p) = do
+      -- If y already occurs in the context it shadows a linear name
       when (y `Map.member` ctx) $ throw $ ErrorLinearity [y]
+      -- Remove the association for x from the context.
       (ctx, g) <- remove ctx x
+      -- Check the shape of the type of x.
       case Tree.unfold g of
+        -- If it is the input of a channel, insert the association for y in the
+        -- context along with the updated type of x and type check the
+        -- continuation.
         Node.Channel In g1 g2 -> auxP (Map.insert y g1 $ Map.insert x g2 ctx) p
+        -- If it is any other type, signal the error.
         _ -> throw $ ErrorTypeMismatch x "channel input" (Tree.toType g)
     auxP ctx (Channel x Out y p) = do
+      -- Remove the association for x and y from the context.
       (ctx, g) <- remove ctx x
       (ctx, f) <- remove ctx y
+      -- Check the shape of the type associated with x.
       case Tree.unfold g of
+        -- If it is the output of a channel...
         Node.Channel Out g1 g2 -> do
+          -- Check that the type of y matches the expected one.
           checkTypeEq y g1 f
+          -- Update the type of x and type check the continuation.
           auxP (Map.insert x g2 ctx) p
+        -- If it is any other type...
         _ -> throw $ ErrorTypeMismatch x "channel output" (Tree.toType g)
     auxP ctx (Label x pol cs) = do
+      -- Remove the association for x from the context.
       (ctx, g) <- remove ctx x
+      -- Check the shape of the type associated with x.
       case Tree.unfold g of
+        -- If it is the input/output of a label with the right polarity...
         Node.Label pol' tgm | pol == pol' -> do
+          -- Retrieve the set of labels from the type
           let labelset = Map.keysSet tgm
+          -- Retrieve the set of labels from the process
           let labelset' = Set.fromList (map fst cs)
+          -- If the two sets of labels differ, there is mismatch between type
+          -- and process.
           unless (labelset == labelset') $ throw $ ErrorLabelMismatch x (Set.elems labelset) (Set.elems labelset')
+          -- Type check each branch after updating the context.
           forM_ (Map.toList (zipMap tgm (Map.fromList cs))) $
             \(label, (f, p)) -> auxP (Map.insert x f ctx) p
+        -- If it is the input/output of a label with the wrong polarity...
         Node.Label _ _ -> throw $ ErrorTypeMismatch x ("polarity " ++ show pol) (Tree.toType g)
+        -- In all the other cases the type is just the wrong one
         _ -> throw $ ErrorTypeMismatch x "label input/output" (Tree.toType g)
     auxP ctx (New x t p q) = do
+      -- If x already occurs in the context we throw an exception, because it
+      -- would shadow a linear resource.
       when (x `Map.member` ctx) $ throw $ ErrorLinearity [x]
       let g = Tree.fromType t
+      -- Unlike the typing rule shown in the paper, where it is required for the
+      -- session types associated with the two endpoints to be compatible, here
+      -- we use duality. To be sure that duality implies compatibility, we
+      -- require the provided session type to be bounded.
       unless (Predicate.bounded g) $ throw $ ErrorTypeUnbounded x
+      -- Compute the channel names occurring free in p and q, excluding x.
       let pnameset = Set.delete x (fn p)
       let qnameset = Set.delete x (fn q)
       let uset = Set.union pnameset qnameset
       let iset = Set.intersection pnameset qnameset
       let eset = Map.keysSet ctx
+      -- Only x may occur free in both p and q. If there is another name that
+      -- occurs in both processes, then it is used non-linearly.
       unless (Set.null iset) $ throw $ ErrorLinearity (Set.elems iset)
+      -- If the union of the channel names occurring free in p and q differs
+      -- from the domain of the context, then there is a linearity violation.
       unless (uset == eset) $ throw $ ErrorLinearity (Set.elems (Set.union (Set.difference eset uset) (Set.difference uset eset)))
+      -- Compute the contexts for typing p and q.
       let ctxp = Map.restrictKeys ctx pnameset
       let ctxq = Map.restrictKeys ctx qnameset
       auxP (Map.insert x g ctxp) p
+      -- In q we compute the dual of the type of x.
       auxP (Map.insert x (Tree.remap $ Tree.dual g) ctxq) q
     auxP ctx (Choice p q) = do
+      -- Type check p and q using the same context.
       auxP ctx p
       auxP ctx q
     auxP ctx (Cast x s p) = do
@@ -255,4 +304,5 @@ checkTypes subt pdefs = forM_ pdefs auxD
       let g2 = Tree.fromType s
       -- Use 'subt' to check that the cast is a valid one.
       unless (subt g1 g2) $ throw $ ErrorInvalidCast x (Tree.toType g1) (Tree.toType g2)
+      -- Type check the continuation.
       auxP (Map.insert x g2 ctx) p
