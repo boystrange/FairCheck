@@ -24,7 +24,7 @@ all:
 	@$(STACK) build
 
 docs:
-	@$(STACK) exec haddock -- --hide Parser --ignore-link-symbol=Parser --html -o docs $(SOURCES:%=src/%)
+	@$(STACK) exec haddock -- --package-name FairCheck --hide Parser --ignore-link-symbol=Parser --html -o docs $(SOURCES:%=src/%)
 
 watch:
 	@$(STACK) build --file-watch

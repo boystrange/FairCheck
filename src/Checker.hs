@@ -151,10 +151,15 @@ checkRanks pdefs = do
         -- non-deterministic choice is the rank of that branch.
         aux (Choice _ p) = aux p
 
--- |Implementation of the type checking algorithm.
+-- |Check that all provided process definitions are well typed using the
+-- algorithmic version of the type system. The first argument is the subtyping
+-- relation being used, so that it is possible to choose among fair and unfair
+-- subtyping.
 checkTypes :: Subtype -> [ProcessDef] -> IO ()
 checkTypes subt pdefs = forM_ pdefs auxD
   where
+    -- Create the global assignment associating each process name with the list
+    -- of session types of the channel names that occur free in its body.
     penv :: Map ProcessName [Tree Vertex]
     penv = makeProcessContext pdefs
 
@@ -248,5 +253,6 @@ checkTypes subt pdefs = forM_ pdefs auxD
     auxP ctx (Cast x s p) = do
       (ctx, g1) <- remove ctx x
       let g2 = Tree.fromType s
+      -- Use 'subt' to check that the cast is a valid one.
       unless (subt g1 g2) $ throw $ ErrorInvalidCast x (Tree.toType g1) (Tree.toType g2)
       auxP (Map.insert x g2 ctx) p
