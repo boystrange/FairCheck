@@ -15,7 +15,7 @@
 --
 -- Copyright 2021 Luca Padovani
 
--- |Representation of processes.
+-- |Representation of processes (Section 4).
 module Process where
 
 import Atoms
