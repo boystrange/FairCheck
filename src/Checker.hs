@@ -46,7 +46,8 @@ type Context = Map ChannelName (Tree Vertex)
 -- by subtyping.
 type Subtype = Tree Vertex -> Tree Vertex -> Bool
 
--- |Compute the __rank__ of a process given a list of process definitions.
+-- |Compute the __rank__ of a process given a list of process definitions
+-- (Definition F.1).
 rank :: [ProcessDef] -> Process -> Int
 rank pdefs = aux []
   where
@@ -121,8 +122,8 @@ makeProcessOrder pdefs = closure (Set.fromList [ (x, y) | (y, _, Just p) <- pdef
 makeProcessContext :: [ProcessDef] -> Map ProcessName [Tree Vertex]
 makeProcessContext pdefs = Map.fromList [ (pname, map (Tree.fromType . snd) us) | (pname, us, _) <- pdefs ]
 
--- |Check whether all process definitions are __session bounded__ and __cast
--- bounded__.
+-- |Check whether all process definitions are __session bounded__ (Section 5.2)
+-- and __cast bounded__ (Section 5.3).
 checkRanks :: [ProcessDef] -> IO ()
 checkRanks pdefs = do
   -- We only need to check for session/cast boundedness for recursive processes,
@@ -152,9 +153,9 @@ checkRanks pdefs = do
         aux (Choice _ p) = aux p
 
 -- |Check that all provided process definitions are well typed using the
--- algorithmic version of the type system. The first argument is the subtyping
--- relation being used, so that it is possible to choose among fair and unfair
--- subtyping.
+-- algorithmic version of the type system (Section F.2). The first argument is
+-- the subtyping relation being used, so that it is possible to choose among
+-- fair and unfair subtyping.
 checkTypes :: Subtype -> [ProcessDef] -> IO ()
 checkTypes subt pdefs = forM_ pdefs auxD
   where
@@ -190,7 +191,9 @@ checkTypes subt pdefs = forM_ pdefs auxD
 
     -- Check that a process is well typed in a given context.
     auxP :: Context -> Process -> IO ()
+    -- Rule [a-done]
     auxP ctx Done = checkEmpty ctx
+    -- Rule [a-call]
     auxP ctx (Call pname us) = do
       -- Retrive the list of types of the arguments of 'pname'
       gs <- checkProcess pname
@@ -205,6 +208,7 @@ checkTypes subt pdefs = forM_ pdefs auxD
       unless (uset == vset) $ throw $ ErrorLinearity $ Set.elems $ Set.union (Set.difference uset vset) (Set.difference vset uset)
       -- Make sure that the expected and actual types of the argument match.
       forM_ (Map.toList (zipMap ctx' ctx)) $ \(x, (g1, g2)) -> checkTypeEq x g1 g2
+    -- Rule [a-wait]
     auxP ctx (Wait x p) = do
       -- Remove the association for x from the context.
       (ctx, t) <- remove ctx x
@@ -212,6 +216,7 @@ checkTypes subt pdefs = forM_ pdefs auxD
       checkTypeEq x (Tree.fromType (Type.End In)) t
       -- Type check the continuation.
       auxP ctx p
+    -- Rule [a-close]
     auxP ctx (Close x) = do
       -- Remove the association for x from the context.
       (ctx, t) <- remove ctx x
@@ -219,6 +224,7 @@ checkTypes subt pdefs = forM_ pdefs auxD
       checkEmpty ctx
       -- Make sure that the type of x is !end
       checkTypeEq x (Tree.fromType (Type.End Out)) t
+    -- Rule [a-channel-in]
     auxP ctx (Channel x In y p) = do
       -- If y already occurs in the context it shadows a linear name
       when (y `Map.member` ctx) $ throw $ ErrorLinearity [y]
@@ -232,6 +238,7 @@ checkTypes subt pdefs = forM_ pdefs auxD
         Node.Channel In g1 g2 -> auxP (Map.insert y g1 $ Map.insert x g2 ctx) p
         -- If it is any other type, signal the error.
         _ -> throw $ ErrorTypeMismatch x "channel input" (Tree.toType g)
+    -- Rule [a-channel-out]
     auxP ctx (Channel x Out y p) = do
       -- Remove the association for x and y from the context.
       (ctx, g) <- remove ctx x
@@ -246,6 +253,7 @@ checkTypes subt pdefs = forM_ pdefs auxD
           auxP (Map.insert x g2 ctx) p
         -- If it is any other type...
         _ -> throw $ ErrorTypeMismatch x "channel output" (Tree.toType g)
+    -- Rule [a-label]
     auxP ctx (Label x pol cs) = do
       -- Remove the association for x from the context.
       (ctx, g) <- remove ctx x
@@ -267,6 +275,7 @@ checkTypes subt pdefs = forM_ pdefs auxD
         Node.Label _ _ -> throw $ ErrorTypeMismatch x ("polarity " ++ show pol) (Tree.toType g)
         -- In all the other cases the type is just the wrong one
         _ -> throw $ ErrorTypeMismatch x "label input/output" (Tree.toType g)
+    -- Rule [a-par]
     auxP ctx (New x t p q) = do
       -- If x already occurs in the context we throw an exception, because it
       -- would shadow a linear resource.
@@ -274,8 +283,8 @@ checkTypes subt pdefs = forM_ pdefs auxD
       let g = Tree.fromType t
       -- Unlike the typing rule shown in the paper, where it is required for the
       -- session types associated with the two endpoints to be compatible, here
-      -- we use duality. To be sure that duality implies compatibility, we
-      -- require the provided session type to be bounded.
+      -- we use duality (Theorem 3.15). To be sure that duality implies
+      -- compatibility, we require the provided session type to be bounded.
       unless (Predicate.bounded g) $ throw $ ErrorTypeUnbounded x
       -- Compute the channel names occurring free in p and q, excluding x.
       let pnameset = Set.delete x (fn p)
@@ -295,10 +304,12 @@ checkTypes subt pdefs = forM_ pdefs auxD
       auxP (Map.insert x g ctxp) p
       -- In q we compute the dual of the type of x.
       auxP (Map.insert x (Tree.remap $ Tree.dual g) ctxq) q
+    -- Rule [a-choice]
     auxP ctx (Choice p q) = do
       -- Type check p and q using the same context.
       auxP ctx p
       auxP ctx q
+    -- Rule [a-cast]
     auxP ctx (Cast x s p) = do
       (ctx, g1) <- remove ctx x
       let g2 = Tree.fromType s
