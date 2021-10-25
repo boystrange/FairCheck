@@ -15,15 +15,18 @@
 --
 -- Copyright 2021 Luca Padovani
 
--- |This module defines the external representation of __session types__.
--- Recursive session types are represented by "rec" terms.
+-- |This module defines the external representation of __session types__
+-- (Section 3.1).
 module Type where
 
 import Atoms
 import Data.Set (Set)
 import qualified Data.Set as Set
 
--- |Session type representation.
+-- |Session type representation. In addition to the forms described in the
+-- paper, we also provide a 'Rec' constructor to represent recursive session
+-- types explicitly in a closed form that is easier to convert into regular
+-- trees.
 data Type
   -- |Terminated protocol.
   = End Polarity
