@@ -16,7 +16,8 @@
 -- Copyright 2021 Luca Padovani
 
 -- |Implementation of a naive model checker for the μ-calculus used in the
--- decision algorithm for fair subtyping.
+-- decision algorithm for fair subtyping. The model checker is not meant to be
+-- efficient, but makes the artifact self contained.
 module Formula where
 
 import Data.Set (Set)
@@ -45,22 +46,6 @@ data Formula a s
   -- |Greatest fixed point.
   | Nu (Formula a s)
 
--- |The always false formula.
-false :: Formula a s
-false = If (const False)
-
--- |The always true formula.
-true :: Formula a s
-true = If (const True)
-
--- |Another name for the disjunction operator.
-or :: Formula a s -> Formula a s -> Formula a s
-or = Or
-
--- |Another name for the conjunction operator.
-and :: Formula a s -> Formula a s -> Formula a s
-and = And
-
 -- |Negation of a formula computed by duality (there is no native negation
 -- operator).
 neg :: Formula a s -> Formula a s
@@ -72,6 +57,16 @@ neg (Any p f) = All p (neg f)
 neg (All p f) = Any p (neg f)
 neg (Mu f) = Nu (neg f)
 neg (Nu f) = Mu (neg f)
+
+-- |Unicode names for disjunction and conjunction.
+(∨), (∧) :: Formula a s -> Formula a s -> Formula a s
+(∨) = Or
+(∧) = And
+
+-- |Unicode names for least and greatest fixed points.
+μ, ν :: Formula a s -> Formula a s
+μ = Mu
+ν = Nu
 
 -- |Compute the semantics of a formula, namely the set of states for which the
 -- formula holds, given an initial set of states and a transition function.

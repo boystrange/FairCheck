@@ -41,7 +41,8 @@ data ChannelI
 data ProcessI
 
 -- |The 'Identifier' data type represents the occurrence of an identifier within
--- a script. It is parametric in the kind of the identifier.
+-- a script. It is a phantom type whose type parameter indicates the kind of the
+-- identifier.
 data Identifier k = Identifier { identifierPos :: Pos
                                , identifierText :: String }
 instance Show (Identifier k) where

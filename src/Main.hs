@@ -15,6 +15,7 @@
 --
 -- Copyright 2021 Luca Padovani
 
+-- |This module parses the command-line arguments and invokes the type checker.
 module Main (main) where
 
 import qualified Relation
@@ -23,7 +24,7 @@ import qualified Checker
 import Render
 import Exceptions (MyException)
 import Parser (parseProcess)
-import Process
+import Process (ProcessDef)
 import System.Console.GetOpt
 import System.IO (stdout, stderr, hFlush, hPutStrLn)
 import System.Exit (exitWith, ExitCode(ExitSuccess, ExitFailure))
@@ -34,12 +35,11 @@ import qualified Data.Version
 import Data.Time (getCurrentTime, diffUTCTime)
 import System.FilePath.Posix (takeFileName)
 
-putTitle :: String -> IO ()
-putTitle s = printTitle ("\n" ++ s ++ "\n")
-
+-- |Version of the program.
 version :: Data.Version.Version
-version = Data.Version.makeVersion [1, 0]
+version = Data.Version.makeVersion [1, 1]
 
+-- |Entry point.
 main :: IO ()
 main = do
   progName <- getProgName
@@ -79,6 +79,7 @@ main = do
     handler :: [Flag] -> MyException -> IO ()
     handler _ e = printNO (show e)
 
+-- |Representation of supported flags.
 data Flag = Verbose  -- -v --verbose
           | Version  -- -V --version
           | Logging  --    --log
@@ -89,6 +90,7 @@ data Flag = Verbose  -- -v --verbose
           | Unfair   -- -u
             deriving (Eq, Ord)
 
+-- |List of supported flags.
 flags :: [OptDescr Flag]
 flags =
    [ Option []  ["log"]      (NoArg Logging)     "Log type checking time"
@@ -100,6 +102,7 @@ flags =
    , Option "V" ["version"]  (NoArg Version)     "Print version information"
    , Option "h" ["help"]     (NoArg Help)        "Print this help message" ]
 
+-- |The information displayed when the verbose option is specified.
 versionInfo :: String -> String
 versionInfo progName =
   "FairCheck " ++ Data.Version.showVersion version ++ " Copyright © 2021 Luca Padovani\n"
@@ -107,6 +110,7 @@ versionInfo progName =
   ++ "This is free software: you are free to change and redistribute it.\n"
   ++ "There is NO WARRANTY, to the extent permitted by law."
 
+-- |Parse command-line arguments.
 parse :: String -> [String] -> IO ([Flag], String)
 parse progName argv =
   case getOpt Permute flags argv of

@@ -26,7 +26,7 @@ import Data.Set (Set)
 import qualified Data.Set as Set
 
 import Common (zipMap, mergeMap)
-import Atoms ( Polarity(..), Label, dualP )
+import Atoms (Polarity(..), Label, dualP)
 
 -- |Result of merging two node identifiers, depending on whether only the left
 -- one is present, or only the right one is present, or both are present.
@@ -57,8 +57,8 @@ data Node u
 -- 'Nothing', if the comparison fails, or 'Just' two lists of pairs of node
 -- identifiers that must be compared in turn. The first list refers to
 -- nodes that must be checked for __equality__, whereas the second list refers
--- to nodes that must be compared corecursively, according to the same comparing
--- being made between the two initial nodes.
+-- to nodes that must be compared corecursively, according to the same
+-- comparison being made between the two initial nodes.
 type Comparator u v = Node u -> Node v -> Maybe ([(u, v)], [(u, v)])
 
 instance Show u => Show (Node u) where
@@ -100,7 +100,11 @@ equalityCmp (Label p um) (Label q vm) | p == q
                                       , Map.keysSet um == Map.keysSet vm = Just ([], Prelude.map snd (Map.toList (zipMap um vm)))
 equalityCmp _ _ = Nothing
 
--- |Subtyping comparison for nodes.
+-- | Subtyping comparison for nodes. The subtyping relation between nodes is
+-- essentially the same described in the paper /Subtyping for session types in/
+-- /the pi calculus/ <https://doi.org/10.1007/s00236-005-0177-z>, except that
+-- higher-order session types are __invariant__ with respect to the type of
+-- channel being sent as a message.
 subtypeCmp :: (Ord u, Ord v) => Comparator u v
 subtypeCmp (End p) (End q) | p == q = Just ([], [])
 subtypeCmp (Channel p u1 u2) (Channel q v1 v2) | p == q = Just ([(u1, v1)], [(u2, v2)])
@@ -108,19 +112,13 @@ subtypeCmp (Label In um) (Label In vm) | Map.keysSet um `Set.isSubsetOf` Map.key
 subtypeCmp (Label Out um) (Label Out vm) | Map.keysSet vm `Set.isSubsetOf` Map.keysSet um = Just ([], Prelude.map snd (Map.toList (zipMap um vm)))
 subtypeCmp _ _ = Nothing
 
--- |Behavioral difference between two nodes. The result is either a singleton
+-- | Behavioral difference between two nodes. The result is either a singleton
 -- list with the result of the difference or the empty list if the difference is
--- undefined.
+-- undefined. For the definition of behavioral difference between session types
+-- see the paper /Fair Subtyping for Multi-Party Session Types/
+-- <http://dx.doi.org/10.1017/S096012951400022X>.
 difference :: Node u -> Node v -> [Node (Merge u v)]
 difference (Channel p i1 i2) (Channel q _ j2) | p == q = [Channel p (OnlyLeft i1) (Both i2 j2)]
 difference (Label In bm1) (Label In bm2) | Map.keysSet bm1 `Set.isSubsetOf` Map.keysSet bm2 = [Label In (diffMap bm1 bm2)]
 difference (Label Out bm1) (Label Out bm2) | Map.keysSet bm2 `Set.isSubsetOf` Map.keysSet bm1 = [Label Out (diffMap bm1 bm2)]
 difference _ _ = []
-
--- |Behavioral meet between two nodes. The result is either a singleton list
--- with the result of the meet or the empty list if the meet is undefined.
-meet :: Node u -> Node v -> [Node (Merge u v)]
-meet (Channel p i1 i2) (Channel q _ j2) | p == q = [Channel p (OnlyLeft i1) (Both i2 j2)]
-meet (Label In bm1) (Label In bm2) | not (Map.disjoint bm1 bm2) = [Label In $ Map.intersectionWith Both bm1 bm2]
-meet (Label Out bm1) (Label Out bm2) | not (Map.disjoint bm1 bm2) = [Label Out $ mergeMap OnlyLeft OnlyRight Both bm1 bm2]
-meet _ _ = []

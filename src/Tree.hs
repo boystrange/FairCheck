@@ -183,15 +183,6 @@ difference (Tree i1 m1) (Tree i2 m2) = Tree (Node.Both i1 i2) m
     md = zipNodeMap Node.difference m1 m2
     m  = ml `disjointUnion` md
 
--- |Compute the behavioral meet of two regular trees.
-meet :: (Ord u, Ord v) => Tree u -> Tree v -> Tree (Node.Merge u v)
-meet (Tree i1 m1) (Tree i2 m2) = Tree (Node.Both i1 i2) m
-  where
-    ml = mapNodeMap Node.OnlyLeft (Node.map Node.OnlyLeft) m1
-    mr = mapNodeMap Node.OnlyRight (Node.map Node.OnlyRight) m2
-    mm = zipNodeMap Node.meet m1 m2
-    m = ml `disjointUnion` mr `disjointUnion` mm
-
 -- |Labeled-transition system originating from the root or a regular tree.
 actions :: Ord u => Tree u -> [(Action u, Tree u)]
 actions t =

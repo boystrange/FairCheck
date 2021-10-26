@@ -15,7 +15,8 @@
 --
 -- Copyright 2021 Luca Padovani
 
--- |Implementation of the type checker.
+-- |This module provides an implementation of the type checker according to the
+-- algorithmic version of the type system (Section F.2).
 module Checker where
 
 import Data.Map (Map)
@@ -152,8 +153,7 @@ checkRanks pdefs = do
         -- non-deterministic choice is the rank of that branch.
         aux (Choice _ p) = aux p
 
--- |Check that all provided process definitions are well typed using the
--- algorithmic version of the type system (Section F.2). The first argument is
+-- | Check that all process definitions are well typed. The first argument is
 -- the subtyping relation being used, so that it is possible to choose among
 -- fair and unfair subtyping.
 checkTypes :: Subtype -> [ProcessDef] -> IO ()
