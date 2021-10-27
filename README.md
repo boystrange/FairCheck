@@ -44,9 +44,9 @@ against the implementation of `FairCheck` in the corresponding section below.
 
 The artifact is [available on Zenodo (external
 link)](https://doi.org/10.5281/zenodo.5547687) as a VirtualBox image
-`FairCheck.ova` as well as an archive `FairCheck-master.zip`. The next
-sub-sections describe the steps to be taken to compile and test the artifact in
-each case.
+`FairCheck.ova` as well as a source code archive `FairCheck-master.zip`. The
+next sub-sections describe the steps to be taken to compile and test the
+artifact in each case.
 
 ### Using `FairCheck.ova`
 
