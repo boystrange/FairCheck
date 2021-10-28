@@ -15,6 +15,7 @@
 --
 -- Copyright 2021 Luca Padovani
 
+-- |μ-calculus formulas used in the algorithm for fair subtyping.
 module Predicate (defined, viable, bounded) where
 
 import Atoms
@@ -22,13 +23,15 @@ import qualified Node
 import qualified Tree
 import Formula
 
+-- |Alias for the type of μ-calculus formulas used in this particular module.
 type F u = Formula (Tree.Action u) (Tree.Tree u)
 
 definedF :: Ord u => F u
-definedF = Formula.Nu (If aux `Formula.And` All (const True) (X 0))
+definedF = ν (If aux ∧ All (const True) (X 0))
   where
     aux g = Tree.unfold g /= Node.Nil
 
+-- |A session type is __ended__ if it is constructed with 'Node.End'.
 endF :: Ord u => F u
 endF = If aux
   where
@@ -37,12 +40,15 @@ endF = If aux
               _ -> False
 
 boundedF :: Ord u => F u
-boundedF = Formula.Nu (toEndF `Formula.and` All (const True) (X 0))
+boundedF = ν (toEndF ∧ All (const True) (X 0))
   where
-    toEndF = Formula.Mu (endF `Formula.or` Any (const True) (X 0))
+    toEndF = μ (endF ∨ Any (const True) (X 0))
 
+-- |Formula for viability. Informally, a session type is viable if it is ended,
+-- or if it is an input with at least one viable branch, or if it is an output
+-- with all viable branches.
 viableF :: Ord u => F u
-viableF = Formula.Nu (Formula.Mu (endF `Formula.or` Any input (X 0) `Formula.or` (Any output (X 0) `Formula.and` All output (X 1))))
+viableF = ν (μ (endF ∨ Any input (X 0) ∨ (Any output (X 0) ∧ All output (X 1))))
   where
     hasPolarity :: Polarity -> Tree.Action u -> Bool
     hasPolarity p (Tree.LabelA q _) = p == q
@@ -54,13 +60,19 @@ viableF = Formula.Nu (Formula.Mu (endF `Formula.or` Any input (X 0) `Formula.or`
     output :: Tree.Action u -> Bool
     output = hasPolarity Out
 
+-- |Alias for predicates over session types represented as regular trees.
 type Predicate u = Tree.Tree u -> Bool
 
+-- |A session type is __defined__ if none of its subtrees is 'Node.Nil'.
 defined :: Ord u => Predicate u
-defined = Formula.check Tree.after definedF
+defined = check Tree.after definedF
 
+-- |A session type is __viable__ if each of its subtrees has a session type
+-- compatible with it.
 viable :: Ord u => Predicate u
-viable = Formula.check Tree.after viableF
+viable = check Tree.after viableF
 
+-- |A session type is __bounded__ if each of its subtrees has a path to an ended
+-- session type.
 bounded :: Ord u => Predicate u
-bounded = Formula.check Tree.after boundedF
+bounded = check Tree.after boundedF

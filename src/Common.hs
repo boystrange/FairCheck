@@ -16,7 +16,7 @@
 -- Copyright 2021 Luca Padovani
 
 -- |This module contains general-purpose functions that are not found in
--- Haskell's standard library
+-- Haskell's standard library.
 module Common where
 
 import qualified Data.List as List

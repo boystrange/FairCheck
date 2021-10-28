@@ -15,6 +15,7 @@
 --
 -- Copyright 2021 Luca Padovani
 
+-- |Expansion of session types into closed recursive terms.
 module Resolver (resolve) where
 
 import Atoms
@@ -23,6 +24,8 @@ import Type
 import Process
 import Control.Exception (throw)
 
+-- |Given a list of type definitions and a possibly open type, create a closed
+-- type.
 resolveT :: [TypeDef] -> Type -> Type
 resolveT tdefs = aux []
   where
@@ -38,6 +41,8 @@ resolveT tdefs = aux []
 
     auxB tnames (label, t) = (label, aux tnames t)
 
+-- |Given a list of type definitions and a process, close all types occurring in
+-- the process.
 resolveP :: [TypeDef] -> Process -> Process
 resolveP tdefs = aux
   where
@@ -53,6 +58,8 @@ resolveP tdefs = aux
 
     auxB (label, p) = (label, aux p)
 
+-- |Given a list of type definitions and a list of process definitions, close
+-- all process definitions.
 resolve :: [TypeDef] -> [ProcessDef] -> [ProcessDef]
 resolve tdefs = map auxD
   where

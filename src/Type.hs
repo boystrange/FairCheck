@@ -15,19 +15,31 @@
 --
 -- Copyright 2021 Luca Padovani
 
+-- |This module defines the external representation of __session types__
+-- (Section 3.1).
 module Type where
 
 import Atoms
 import Data.Set (Set)
 import qualified Data.Set as Set
 
+-- |Session type representation. In addition to the forms described in the
+-- paper, we also provide a 'Rec' constructor to represent recursive session
+-- types explicitly in a closed form that is easier to convert into regular
+-- trees.
 data Type
+  -- |Terminated protocol.
   = End Polarity
+  -- |Session type variable.
   | Var TypeName
+  -- |Recursive session type.
   | Rec TypeName Type
+  -- |Input/output of a channel.
   | Channel Polarity Type Type
+  -- |Input/output of a label.
   | Label Polarity [(Label, Type)]
 
+-- |Compute the set of free session type variables occurring in a session type.
 fn :: Type -> Set TypeName
 fn (End _) = Set.empty
 fn (Var tname) = Set.singleton tname
@@ -37,5 +49,5 @@ fn (Label _ bs) = Set.unions (map (fn . snd) bs)
 
 -- DEFINITIONS
 
+-- |A type definition is a pair consisting of a type name and a session type.
 type TypeDef = (TypeName, Type)
-

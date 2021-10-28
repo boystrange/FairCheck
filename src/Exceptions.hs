@@ -15,14 +15,16 @@
 --
 -- Copyright 2021 Luca Padovani
 
+-- |Representation of FairCheck-specific syntax and typing errors.
 module Exceptions where
 
 import Atoms
-import Type ( Type )
-import Render
-import Control.Exception
+import Type (Type)
+import Render ()
+import Control.Exception (Exception)
 import qualified Data.List as List
 
+-- |The type of FairCheck exceptions.
 data MyException
   = ErrorSyntax String
   | ErrorMultipleTypeDefinitions TypeName

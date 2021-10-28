@@ -17,6 +17,7 @@
 --
 -- Copyright 2021 Luca Padovani
 
+-- |This module implements the parser for FairCheck scripts.
 module Parser (parseProcess) where
 
 import Lexer
