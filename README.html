@@ -114,10 +114,9 @@ aside > *:last-child {
 <p><code>FairCheck</code> is an implementation of the type system described in the paper <em>Fair
 Termination of Binary Sessions</em> submitted to POPL 2022 (submission #30). A draft
 of the paper that also includes the algorithmic version of the type system on
-which <code>FairCheck</code> is based is <a href="http://www.di.unito.it/~padovani/assets/downloads/fair-termination.pdf">available here (external
-link)</a>.
-<code>FairCheck</code> parses a distributed program modeled in a session-oriented variant
-of the π-calculus and verifies that:</p>
+which <code>FairCheck</code> is based is <a href="paper/fair-termination.pdf">available here (external
+link)</a>. <code>FairCheck</code> parses a distributed program
+modeled in a session-oriented variant of the π-calculus and verifies that:</p>
 <ol>
 <li>There exists a <strong>typing derivation</strong> for each definition in the program using
 the algorithmic version of the type system (Section 6 of the paper and
@@ -154,9 +153,9 @@ boundedness was not enforced (Section 5.3)</a></li>
 <h2 id="download-installation-and-sanity-testing">Download, installation, and sanity-testing</h2>
 <p>The artifact is <a href="https://doi.org/10.5281/zenodo.5547687">available on Zenodo (external
 link)</a> as a VirtualBox image
-<code>FairCheck.ova</code> as well as an archive <code>FairCheck-master.zip</code>. The next
-sub-sections describe the steps to be taken to compile and test the artifact in
-each case.</p>
+<code>FairCheck.ova</code> as well as a source code archive <code>FairCheck-master.zip</code>. The
+next sub-sections describe the steps to be taken to compile and test the
+artifact in each case.</p>
 <h3 id="using-faircheckova">Using <code>FairCheck.ova</code></h3>
 <p>The virtual image runs Ubuntu Linux 20.04 LTS and contains all that is necessary
 in order to compile the source code of <code>FairCheck</code>; it has been tested using
@@ -255,10 +254,13 @@ protocol <code>T</code>, the business protocol <code>S</code> and the dual of th
 <code>R</code>. Next are the process definitions corresponding to those of Example 4.1.
 Note that <code>FairCheck</code> implements a type checker, not a type reconstruction
 algorithm. Hence, <strong>bound names</strong> and <strong>casts</strong> must be <strong>explicitly annotated</strong>
-with session types. Also, for the sake of readability, <strong>session restrictions</strong>
-<code>(x)(P | Q)</code> are denoted by the form <code>new (x : S) P in Q</code>. Only the type <code>S</code> of
-the session endpoint used by <code>P</code> must be provided, whereas the endpoint used by
-<code>Q</code> is implicitly associated with the dual of <code>S</code>.</p>
+with session types. For example, the declarations <code>x : T</code> in the definition of
+<code>A</code> and <code>y : !ship.!end</code> in the definition of <code>B</code> state that <code>x</code> and <code>y</code> have
+type <code>T</code> and <code>!ship.!end</code> respectively, in agreement with the global type
+assignments given in Example 6.1. Also, for the sake of readability, <strong>session
+restrictions</strong> <code>(x)(P | Q)</code> are denoted by the form <code>new (x : S) P in Q</code>. Only
+the type <code>S</code> of the session endpoint used by <code>P</code> must be provided, whereas the
+endpoint used by <code>Q</code> is implicitly associated with the dual of <code>S</code>.</p>
 <p>Example 6.1 claims that this program is well typed. To verify the claim we run
 <code>FairCheck</code> specifying the file that contains the program to type check.
 Hereafter, <code>$</code> represents the shell prompt and preceeds the command being
@@ -520,31 +522,226 @@ sections. This is a mixed bag of well- and ill-typed programs.</li>
 <p>Within <a href="src"><code>src</code></a>, the source code of <code>FairCheck</code> is structured into the
 following modules:</p>
 <ul>
-<li><a href="src/Common.hs"><code>Common.hs</code></a>: general-purpose functions not found in Haskell
+<li><a href="src/Common.hs"><code>Common</code></a>: general-purpose functions not found in Haskell
 standard library</li>
-<li><a href="src/Atoms.hs"><code>Atoms.hs</code></a>: representation of <strong>identifiers</strong> and
+<li><a href="src/Atoms.hs"><code>Atoms</code></a>: representation of <strong>identifiers</strong> and
 <strong>polarities</strong></li>
-<li><a href="src/Exceptions.hs"><code>Exceptions.hs</code></a>: <code>FairCheck</code>-specific syntax and typing
+<li><a href="src/Exceptions.hs"><code>Exceptions</code></a>: <code>FairCheck</code>-specific syntax and typing
 <strong>errors</strong></li>
-<li><a href="src/Type.hs"><code>Type.hs</code></a>: representation of <strong>session types</strong></li>
-<li><a href="src/Process.hs"><code>Process.hs</code></a>: representation of <strong>processes</strong></li>
-<li><a href="src/Lexer.x"><code>Lexer.x</code></a>: Alex specification of the <strong>lexical analyzer</strong></li>
-<li><a href="src/Parser.y"><code>Parser.y</code></a>: Happy specification of the <strong>parser</strong></li>
-<li><a href="src/Resolver.hs"><code>Resolver.hs</code></a>: expansion of session types into closed
+<li><a href="src/Type.hs"><code>Type</code></a>: representation of <strong>session types</strong></li>
+<li><a href="src/Process.hs"><code>Process</code></a>: representation of <strong>processes</strong></li>
+<li><a href="src/Lexer.x"><code>Lexer</code></a>: Alex specification of the <strong>lexical analyzer</strong></li>
+<li><a href="src/Parser.y"><code>Parser</code></a>: Happy specification of the <strong>parser</strong></li>
+<li><a href="src/Resolver.hs"><code>Resolver</code></a>: expansion of session types into closed
 recursive terms</li>
-<li><a href="src/Node.hs"><code>Node.hs</code></a> and <a href="src/Tree.hs"><code>Tree.hs</code></a>: <strong>regular tree
+<li><a href="src/Node.hs"><code>Node</code></a> and <a href="src/Tree.hs"><code>Tree</code></a>: <strong>regular tree
 representation</strong> of session types</li>
-<li><a href="src/Checker.hs"><code>Checker.hs</code></a>: implementation of the <strong>type checker</strong></li>
-<li><a href="src/Formula.hs"><code>Formula.hs</code></a>: implementation of <strong>model checker</strong> for the
+<li><a href="src/Checker.hs"><code>Checker</code></a>: implementation of the <strong>type checker</strong></li>
+<li><a href="src/Formula.hs"><code>Formula</code></a>: implementation of <strong>model checker</strong> for the
 <strong>μ-calculus</strong></li>
-<li><a href="src/Predicate.hs"><code>Predicate.hs</code></a>: <strong>μ-calculus formulas</strong> used in the
+<li><a href="src/Predicate.hs"><code>Predicate</code></a>: <strong>μ-calculus formulas</strong> used in the
 algorithm for fair subtyping</li>
-<li><a href="src/Relation.hs"><code>Relation.hs</code></a>: implementation of <strong>session type equality</strong>,
+<li><a href="src/Relation.hs"><code>Relation</code></a>: implementation of <strong>session type equality</strong>,
 <strong>unfair subtyping</strong> and <strong>fair subtyping</strong> decision algorithms</li>
-<li><a href="src/Render.hs"><code>Render.hs</code></a>: <strong>pretty printer</strong> for session types and error
+<li><a href="src/Render.hs"><code>Render</code></a>: <strong>pretty printer</strong> for session types and error
 messages</li>
-<li><a href="src/Main.hs"><code>Main.hs</code></a>: main module and handler of command-line options</li>
+<li><a href="src/Main.hs"><code>Main</code></a>: main module and handler of command-line options</li>
 </ul>
+<p>The <code>FairCheck</code> parser accepts a syntax that is close to, but not exactly the
+same as, the one used in the paper. The table below shows the grammar of
+scripts. Square brackets enclose optional parts of the syntax.</p>
+<table>
+<thead>
+<tr>
+<th>Entity</th>
+<th></th>
+<th>Definition</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>x, y</td>
+<td></td>
+<td>non-capitalized identifier (e.g. <code>x</code>, <code>y</code>, ...)</td>
+<td>Channel name</td>
+</tr>
+<tr>
+<td>l</td>
+<td></td>
+<td>non-capitalized identifier or number (e.g. <code>a</code>, <code>add</code>, <code>0</code>, ...)</td>
+<td>Label</td>
+</tr>
+<tr>
+<td>X</td>
+<td></td>
+<td>capitalized identifier (e.g. <code>S</code>, <code>T</code>, ...)</td>
+<td>Type name</td>
+</tr>
+<tr>
+<td>A</td>
+<td></td>
+<td>capitalized identifier (e.g. <code>A</code>, <code>Main</code>, ...)</td>
+<td>Process name</td>
+</tr>
+<tr>
+<td>π</td>
+<td>::=</td>
+<td><code>?</code></td>
+<td>Input polarity</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td><code>!</code></td>
+<td>Output polarity</td>
+</tr>
+<tr>
+<td>Script</td>
+<td>::=</td>
+<td>TypeDef₁ ... TypeDefₘ ProcessDef₁ ... ProcessDefₘ</td>
+<td></td>
+</tr>
+<tr>
+<td>TypeDef</td>
+<td>::=</td>
+<td>X <code>=</code> Type</td>
+<td>Type definition</td>
+</tr>
+<tr>
+<td>ProcessDef</td>
+<td>::=</td>
+<td>A [<code>(</code> x₁ <code>:</code> Type <code>,</code> ... <code>,</code> xₙ <code>:</code> Type <code>)</code>] <code>=</code> Process</td>
+<td>Process definition</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>A [<code>(</code> x₁ <code>:</code> Type <code>,</code> ... <code>,</code> xₙ <code>:</code> Type <code>)</code>] <code>;</code></td>
+<td>Undefined process declaration</td>
+</tr>
+<tr>
+<td>Process</td>
+<td>::=</td>
+<td><code>done</code></td>
+<td>Terminated process</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td><code>close</code> x</td>
+<td>Signal output</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td><code>wait</code> x <code>.</code> Process</td>
+<td>Signal input</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>x π <code>(</code> y <code>)</code> <code>.</code> Process</td>
+<td>Channel input/output</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>x π <code>{</code> l₁ <code>:</code> Process <code>,</code> ... <code>,</code> lₙ <code>:</code> Process <code>}</code></td>
+<td>Label input/output</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>x <code>!</code> l <code>.</code> Process</td>
+<td>Shortcut for label output</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td><code>new</code> <code>(</code> x <code>:</code> Type <code>)</code> Process <code>in</code> Process</td>
+<td>New session</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>Process <code>⊕</code> Process</td>
+<td>Non-deterministic choice</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td><code>⌈</code> x <code>:</code> Type <code>⌉</code> Process</td>
+<td>Cast</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>A [<code>⟨</code> x₁ <code>,</code> ... <code>,</code> xₙ <code>⟩</code>]</td>
+<td>Invocation</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td><code>(</code> Process <code>)</code></td>
+<td>Bracketed process</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>::=</td>
+<td>π <code>end</code></td>
+<td>Terminated session</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>π Type <code>.</code> Type</td>
+<td>Channel input/output</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>π <code>{</code> l₁ <code>:</code> Type <code>,</code> ... <code>,</code> lₙ <code>:</code> Type <code>}</code></td>
+<td>Label input/output</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>π l <code>.</code> Type</td>
+<td>Shortcur for label input/output</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>Type <code>+</code> Type</td>
+<td>Shortcut for external choice (label input)</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>Type <code>⊕</code> Type</td>
+<td>Shortcur for internal choice (label output)</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>X</td>
+<td>Type name</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td><code>rec</code> X <code>.</code> Type</td>
+<td>Recursive type</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td><code>(</code> Type <code>)</code></td>
+<td>Bracketed type</td>
+</tr>
+</tbody>
+</table>
 
     </body>
     </html>
