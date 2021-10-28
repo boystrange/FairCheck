@@ -590,3 +590,56 @@ following modules:
 * [`Render.hs`](src/Render.hs): **pretty printer** for session types and error
   messages
 * [`Main.hs`](src/Main.hs): main module and handler of command-line options
+
+The `FairCheck` parser accepts a syntax that is close to, but not exactly the
+same as, the one used in the paper. The table below shows the syntax of
+processes, types and definitions. Syntactic categories are enclosed with
+`<`...`>`, the notation `<X>...` indicates zero or more occurrences of `<X>`.
+
+| | | | |
+|-|-|-|-|
+| Program | ::= | TypeDef... ProcessDef... |
+|         |     |                          |
+| TypeDef | ::= | T `=` Type               |
+| | | |
+| ProcessDef | ::= | P Parameters `=` Process |
+|            |     | P Parameters `;`         |
+| | | |
+| Parameters | ::= |                                           |
+|            |     | `(` X `:` Type `,` ... `,` X `:` Type `)` |
+| | | |
+| Process    | ::= | `done` | Termination |
+|            |     | `(` Process `)` | Bracketed process |
+|            |     | `close` X | Signal output |
+|            |     | `wait` X `.` Process | Signal input |
+|            |     | X `?` `(` X `)` `.` Process | Channel input |
+|            |     | X `!` '(' X `)` `.` Process | Channel output |
+|            |     | X `!` X `.` Process | Label output |
+
+
+
+
+``` pi
+Program     ::=   TypeDef... ProcessDef...
+
+TypeDef     ::=   T = Type
+
+ProcessDef  ::= P Parameters = Process
+             |  P Parameters ;             // Undefined process
+
+Parameters  ::= ( X : Type... )
+
+Process     ::= done                            // Terminated process
+             |  ( Process )                   // Bracketed process
+             |  close X                         // Signal output
+             |  wait X . Process              // Signal input
+             |  X ? ( X ) . Process           // Channel input
+             |  X ! ( X ) . Process           // Channel output
+             |  X ! X . Process               // Simple label output
+             |  X ! { Case... }               // Label output
+             |  X ? { Case... }               // Label input
+             |  Process ⊕ Process             // Non-deterministic choice
+             |  ⌈ X : Type ⌉                  // Cast
+             |  new ( X : Type ) Process in Process   // Session creation
+             |  Name ⟨ ... ⟩
+```
