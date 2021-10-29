@@ -595,7 +595,7 @@ same as, the one used in the paper. The table below shows the grammar of
 scripts. Square brackets enclose optional parts of the syntax.
 
 | Entity     |     | Definition                                                       | Description                                 |
-|------------|-----|------------------------------------------------------------------|---------------------------------------------|
+|-----------:|-----|------------------------------------------------------------------|---------------------------------------------|
 | x, y       |     | non-capitalized identifier (e.g. `x`, `y`, ...)                  | Channel name                                |
 | l          |     | non-capitalized identifier or number (e.g. `a`, `add`, `0`, ...) | Label                                       |
 | X          |     | capitalized identifier (e.g. `S`, `T`, ...)                      | Type name                                   |
