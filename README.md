@@ -594,19 +594,19 @@ The `FairCheck` parser accepts a syntax that is close to, but not exactly the
 same as, the one used in the paper. The table below shows the grammar of
 scripts. Square brackets enclose optional parts of the syntax.
 
-| Entity     |     | Definition                                                       | Description                                 |
+|     Entity |     | Definition                                                       | Description                                 |
 |-----------:|-----|------------------------------------------------------------------|---------------------------------------------|
-| x, y       |     | non-capitalized identifier (e.g. `x`, `y`, ...)                  | Channel name                                |
-| l          |     | non-capitalized identifier or number (e.g. `a`, `add`, `0`, ...) | Label                                       |
-| X          |     | capitalized identifier (e.g. `S`, `T`, ...)                      | Type name                                   |
-| A          |     | capitalized identifier (e.g. `A`, `Main`, ...)                   | Process name                                |
-| π          | ::= | `?`                                                              | Input polarity                              |
+|       x, y |     | non-capitalized identifier (e.g. `x`, `y`, ...)                  | Channel name                                |
+|          l |     | non-capitalized identifier or number (e.g. `a`, `add`, `0`, ...) | Label                                       |
+|          X |     | capitalized identifier (e.g. `S`, `T`, ...)                      | Type name                                   |
+|          A |     | capitalized identifier (e.g. `A`, `Main`, ...)                   | Process name                                |
+|          π | ::= | `?`                                                              | Input polarity                              |
 |            |     | `!`                                                              | Output polarity                             |
-| Script     | ::= | TypeDef₁ ... TypeDefₘ ProcessDef₁ ... ProcessDefₘ                |                                             |
-| TypeDef    | ::= | X `=` Type                                                       | Type definition                             |
+|     Script | ::= | TypeDef₁ ... TypeDefₘ ProcessDef₁ ... ProcessDefₙ                |                                             |
+|    TypeDef | ::= | X `=` Type                                                       | Type definition                             |
 | ProcessDef | ::= | A [`(` x₁ `:` Type `,` ... `,` xₙ `:` Type `)`] `=` Process      | Process definition                          |
 |            |     | A [`(` x₁ `:` Type `,` ... `,` xₙ `:` Type `)`] `;`              | Undefined process declaration               |
-| Process    | ::= | `done`                                                           | Terminated process                          |
+|    Process | ::= | `done`                                                           | Terminated process                          |
 |            |     | `close` x                                                        | Signal output                               |
 |            |     | `wait` x `.` Process                                             | Signal input                                |
 |            |     | x π `(` y `)` `.` Process                                        | Channel input/output                        |
@@ -617,7 +617,7 @@ scripts. Square brackets enclose optional parts of the syntax.
 |            |     | `⌈` x `:` Type `⌉` Process                                       | Cast                                        |
 |            |     | A [`⟨` x₁ `,` ... `,` xₙ `⟩`]                                    | Invocation                                  |
 |            |     | `(` Process `)`                                                  | Bracketed process                           |
-| Type       | ::= | π `end`                                                          | Terminated session                          |
+|       Type | ::= | π `end`                                                          | Terminated session                          |
 |            |     | π Type `.` Type                                                  | Channel input/output                        |
 |            |     | π `{` l₁ `:` Type `,` ... `,` lₙ `:` Type `}`                    | Label input/output                          |
 |            |     | π l `.` Type                                                     | Shortcur for label input/output             |
