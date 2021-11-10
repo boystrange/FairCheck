@@ -1,12 +1,12 @@
 # Fair Termination of Binary Sessions - Artifact
 
-`FairCheck` is an implementation of the type system described in the paper
-[*Fair Termination of Binary Sessions*](https://doi.org/10.1145/3498666) in the
-proceedings of POPL 2022. A draft of the paper that also includes the
-algorithmic version of the type system on which `FairCheck` is based is
-[available here](paper/fair-termination.pdf). `FairCheck` parses a distributed
-program modeled in a session-oriented variant of the π-calculus and verifies
-that:
+`FairCheck` is a proof-of-concept implementation of the type system described in
+the paper [*Fair Termination of Binary
+Sessions*](https://doi.org/10.1145/3498666) in the proceedings of POPL 2022. A
+draft of the paper that also includes the algorithmic version of the type system
+on which `FairCheck` is based is [available here](paper/fair-termination.pdf).
+`FairCheck` parses a distributed program modeled in a session-oriented variant
+of the π-calculus and verifies that:
 
 1. There exists a **typing derivation** for each definition in the program using
    the algorithmic version of the type system (Section 6 and Appendix F.1).
