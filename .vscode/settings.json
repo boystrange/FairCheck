@@ -6,6 +6,8 @@
         "src/Parser.hs": true,
         "src/Parser.info": true,
         "html/index.html": true,
-        "**/*~": true
+        "**/*~": true,
+        "**/*.lock": true,
+        "docs/*": true
     }
 }
