@@ -1,15 +1,15 @@
 # Fair Termination of Binary Sessions - Artifact
 
-`FairCheck` is an implementation of the type system described in the paper *Fair
-Termination of Binary Sessions* submitted to POPL 2022 (submission #30). A draft
-of the paper that also includes the algorithmic version of the type system on
-which `FairCheck` is based is [available here (external
-link)](paper/fair-termination.pdf). `FairCheck` parses a distributed program
-modeled in a session-oriented variant of the π-calculus and verifies that:
+`FairCheck` is an implementation of the type system described in the paper
+[*Fair Termination of Binary Sessions*](https://doi.org/10.1145/3498666) in the
+proceedings of POPL 2022. A draft of the paper that also includes the
+algorithmic version of the type system on which `FairCheck` is based is
+[available here](paper/fair-termination.pdf). `FairCheck` parses a distributed
+program modeled in a session-oriented variant of the π-calculus and verifies
+that:
 
 1. There exists a **typing derivation** for each definition in the program using
-   the algorithmic version of the type system (Section 6 of the paper and
-   Appendix F.1 of the supplement).
+   the algorithmic version of the type system (Section 6 and Appendix F.1).
 2. Each process definition is **action bounded**, namely there exists a finite
    branch leading to termination (Section 5.1).
 3. Each process definition is **session bounded**, namely the number of sessions
@@ -17,7 +17,7 @@ modeled in a session-oriented variant of the π-calculus and verifies that:
 4. Each process definition is **cast bounded**, namely the number of casts the
    process needs to perform in order to terminate is bounded (Section 5.3).
 
-## List of claims
+## List of claims in the paper
 
 Here is a list of claims made in the paper about the well- or ill-typing of the
 key examples presented in the paper. Each claim will be discussed and checked
@@ -42,62 +42,31 @@ against the implementation of `FairCheck` in the corresponding section below.
 
 ## Download, installation, and sanity-testing
 
-The artifact is [available on Zenodo (external
-link)](https://doi.org/10.5281/zenodo.5547687) as a VirtualBox image
-`FairCheck.ova` as well as a source code archive `FairCheck-master.zip`. The
-next sub-sections describe the steps to be taken to compile and test the
-artifact in each case.
+The artifact is [available on GitHub](https://github.com/boystrange/FairCheck)
+as well as on the ACM Digital Library as a source code archive associated with
+the paper. The next sub-sections describe the steps to be taken to compile and
+test the artifact in each case.
 
-### Using `FairCheck.ova`
-
-The virtual image runs Ubuntu Linux 20.04 LTS and contains all that is necessary
-in order to compile the source code of `FairCheck`; it has been tested using
-VirtualBox 6.1 on MacOS 11.6. Once the image has been downloaded and activated
-and the operating system has booted, open the terminal (grey icon on the left
-dock) and type
-
-``` bash
-cd FairCheck
-```
-
-to enter the directory that contains the source code of `FairCheck` as well as
-the code of all of the examples that we are going to evaluate. This directory is
-in fact a [clone of `FairCheck` GitHub public repository (external
-link)](https://github.com/boystrange/FairCheck).
-
-Note that the present document with all working hyperlinks can also be
-visualized [on GitHub (external link)](https://github.com/boystrange/FairCheck)
-or from within the virtual machine by clicking on the FireFox icon in the dock
-on the left-hand side of the screen.
-
-### Using `FairCheck-master.zip`
-
-These instructions assume the use of MacOS with the [`homebrew` package manager
-(external link)](https://brew.sh) and a terminal running the `bash` shell. First
-of all, make sure that the Haskell compiler and the Haskell Tool Stack are
-installed. If not, issuing the commands
+These instructions assume the use of MacOS with the [`homebrew` package
+manager](https://brew.sh) and a terminal running the `bash` shell. First of all,
+make sure that the Haskell compiler and the Haskell Tool Stack are installed. If
+not, issuing the commands
 
 ``` bash
 brew install haskell-stack
 ```
 
-will install these tools. Unpacking the `.zip` archive downloaded from Zenodo
-will create a directory `FairCheck-master`. From the terminal, type
+will install these tools. After cloning the GitHub repository or unpacking the
+`.zip` archive downloaded from the ACM Digital Library, enter the directory of
+the tool, for example with
 
 ``` bash
-cd FairCheck-master
+cd FairCheck
 ```
 
-to enter the directory that contains the source code of `FairCheck` as well as
-the code of all of the examples that we are going to evaluate. This directory is
-in fact a [clone of `FairCheck` GitHub public repository (external
-link)](https://github.com/boystrange/FairCheck).
-
-### Using `FairCheck-master.zip` on an M1 Mac
-
-At the time this artifact is being evaluated, support for the Haskell compiler
-and the Haskell Tool Stack on M1 Macs is not completely aligned with that of
-other architectures. In particular, it may be necessary to use a different
+At the time this document is being written, support for the Haskell compiler and
+the Haskell Tool Stack on M1 Macs is not completely aligned with that of other
+architectures. In particular, it may be necessary to use a different
 configuration file for the Haskell Tool Stack to compile the artifact on an M1
 Mac. To this aim, in addition to the installation instructions above, install
 the Haskell compiler globally with the command
@@ -118,8 +87,6 @@ to
 YAML = stack_m1.yaml
 ```
 
-### Sanity-testing
-
 To clean up all the auxiliary files produced by the compiler, to (re)generate
 and install the `FairCheck` executable, issue the command
 
@@ -127,7 +94,7 @@ and install the `FairCheck` executable, issue the command
 make clean && make && make install
 ```
 
-The compilation should take only a few seconds to complete. To verify that the
+The compilation should just take a few seconds to complete. To verify that the
 `FairCheck` executable has been built and installed successfully, issue the
 command
 

@@ -111,16 +111,16 @@ aside > *:last-child {
     </head>
     <body class="vscode-body vscode-light">
         <h1 id="fair-termination-of-binary-sessions---artifact">Fair Termination of Binary Sessions - Artifact</h1>
-<p><code>FairCheck</code> is an implementation of the type system described in the paper <em>Fair
-Termination of Binary Sessions</em> submitted to POPL 2022 (submission #30). A draft
-of the paper that also includes the algorithmic version of the type system on
-which <code>FairCheck</code> is based is <a href="paper/fair-termination.pdf">available here (external
-link)</a>. <code>FairCheck</code> parses a distributed program
-modeled in a session-oriented variant of the π-calculus and verifies that:</p>
+<p><code>FairCheck</code> is an implementation of the type system described in the paper
+<a href="https://doi.org/10.1145/3498666"><em>Fair Termination of Binary Sessions</em></a> in the
+proceedings of POPL 2022. A draft of the paper that also includes the
+algorithmic version of the type system on which <code>FairCheck</code> is based is
+<a href="paper/fair-termination.pdf">available here</a>. <code>FairCheck</code> parses a distributed
+program modeled in a session-oriented variant of the π-calculus and verifies
+that:</p>
 <ol>
 <li>There exists a <strong>typing derivation</strong> for each definition in the program using
-the algorithmic version of the type system (Section 6 of the paper and
-Appendix F.1 of the supplement).</li>
+the algorithmic version of the type system (Section 6 and Appendix F.1).</li>
 <li>Each process definition is <strong>action bounded</strong>, namely there exists a finite
 branch leading to termination (Section 5.1).</li>
 <li>Each process definition is <strong>session bounded</strong>, namely the number of sessions
@@ -128,7 +128,7 @@ the process needs to create in order to terminate is bounded (Section 5.2).</li>
 <li>Each process definition is <strong>cast bounded</strong>, namely the number of casts the
 process needs to perform in order to terminate is bounded (Section 5.3).</li>
 </ol>
-<h2 id="list-of-claims">List of claims</h2>
+<h2 id="list-of-claims-in-the-paper">List of claims in the paper</h2>
 <p>Here is a list of claims made in the paper about the well- or ill-typing of the
 key examples presented in the paper. Each claim will be discussed and checked
 against the implementation of <code>FairCheck</code> in the corresponding section below.</p>
@@ -151,46 +151,24 @@ boundedness was not enforced (Section 5.3)</a></li>
 (Section 5.3)</a></li>
 </ol>
 <h2 id="download-installation-and-sanity-testing">Download, installation, and sanity-testing</h2>
-<p>The artifact is <a href="https://doi.org/10.5281/zenodo.5547687">available on Zenodo (external
-link)</a> as a VirtualBox image
-<code>FairCheck.ova</code> as well as a source code archive <code>FairCheck-master.zip</code>. The
-next sub-sections describe the steps to be taken to compile and test the
-artifact in each case.</p>
-<h3 id="using-faircheckova">Using <code>FairCheck.ova</code></h3>
-<p>The virtual image runs Ubuntu Linux 20.04 LTS and contains all that is necessary
-in order to compile the source code of <code>FairCheck</code>; it has been tested using
-VirtualBox 6.1 on MacOS 11.6. Once the image has been downloaded and activated
-and the operating system has booted, open the terminal (grey icon on the left
-dock) and type</p>
-<pre><code class="language-bash"><div><span class="hljs-built_in">cd</span> FairCheck
-</div></code></pre>
-<p>to enter the directory that contains the source code of <code>FairCheck</code> as well as
-the code of all of the examples that we are going to evaluate. This directory is
-in fact a <a href="https://github.com/boystrange/FairCheck">clone of <code>FairCheck</code> GitHub public repository (external
-link)</a>.</p>
-<p>Note that the present document with all working hyperlinks can also be
-visualized <a href="https://github.com/boystrange/FairCheck">on GitHub (external link)</a>
-or from within the virtual machine by clicking on the FireFox icon in the dock
-on the left-hand side of the screen.</p>
-<h3 id="using-faircheck-masterzip">Using <code>FairCheck-master.zip</code></h3>
-<p>These instructions assume the use of MacOS with the <a href="https://brew.sh"><code>homebrew</code> package manager
-(external link)</a> and a terminal running the <code>bash</code> shell. First
-of all, make sure that the Haskell compiler and the Haskell Tool Stack are
-installed. If not, issuing the commands</p>
+<p>The artifact is <a href="https://github.com/boystrange/FairCheck">available on GitHub</a>
+as well as on the ACM Digital Library as a source code archive associated with
+the paper. The next sub-sections describe the steps to be taken to compile and
+test the artifact in each case.</p>
+<p>These instructions assume the use of MacOS with the <a href="https://brew.sh"><code>homebrew</code> package
+manager</a> and a terminal running the <code>bash</code> shell. First of all,
+make sure that the Haskell compiler and the Haskell Tool Stack are installed. If
+not, issuing the commands</p>
 <pre><code class="language-bash"><div>brew install haskell-stack
 </div></code></pre>
-<p>will install these tools. Unpacking the <code>.zip</code> archive downloaded from Zenodo
-will create a directory <code>FairCheck-master</code>. From the terminal, type</p>
-<pre><code class="language-bash"><div><span class="hljs-built_in">cd</span> FairCheck-master
+<p>will install these tools. After cloning the GitHub repository or unpacking the
+<code>.zip</code> archive downloaded from the ACM Digital Library, enter the directory of
+the tool, for example with</p>
+<pre><code class="language-bash"><div><span class="hljs-built_in">cd</span> FairCheck
 </div></code></pre>
-<p>to enter the directory that contains the source code of <code>FairCheck</code> as well as
-the code of all of the examples that we are going to evaluate. This directory is
-in fact a <a href="https://github.com/boystrange/FairCheck">clone of <code>FairCheck</code> GitHub public repository (external
-link)</a>.</p>
-<h3 id="using-faircheck-masterzip-on-an-m1-mac">Using <code>FairCheck-master.zip</code> on an M1 Mac</h3>
-<p>At the time this artifact is being evaluated, support for the Haskell compiler
-and the Haskell Tool Stack on M1 Macs is not completely aligned with that of
-other architectures. In particular, it may be necessary to use a different
+<p>At the time this document is being written, support for the Haskell compiler and
+the Haskell Tool Stack on M1 Macs is not completely aligned with that of other
+architectures. In particular, it may be necessary to use a different
 configuration file for the Haskell Tool Stack to compile the artifact on an M1
 Mac. To this aim, in addition to the installation instructions above, install
 the Haskell compiler globally with the command</p>
@@ -202,12 +180,11 @@ the Haskell compiler globally with the command</p>
 <p>to</p>
 <pre><code class="language-make"><code><div>YAML = stack_m1.yaml
 </div></code></code></pre>
-<h3 id="sanity-testing">Sanity-testing</h3>
 <p>To clean up all the auxiliary files produced by the compiler, to (re)generate
 and install the <code>FairCheck</code> executable, issue the command</p>
 <pre><code class="language-bash"><div>make clean &amp;&amp; make &amp;&amp; make install
 </div></code></pre>
-<p>The compilation should take only a few seconds to complete. To verify that the
+<p>The compilation should just take a few seconds to complete. To verify that the
 <code>FairCheck</code> executable has been built and installed successfully, issue the
 command</p>
 <pre><code class="language-bash"><div>faircheck
@@ -553,7 +530,7 @@ scripts. Square brackets enclose optional parts of the syntax.</p>
 <table>
 <thead>
 <tr>
-<th>Entity</th>
+<th style="text-align:right">Entity</th>
 <th></th>
 <th>Definition</th>
 <th>Description</th>
@@ -561,181 +538,181 @@ scripts. Square brackets enclose optional parts of the syntax.</p>
 </thead>
 <tbody>
 <tr>
-<td>x, y</td>
+<td style="text-align:right">x, y</td>
 <td></td>
 <td>non-capitalized identifier (e.g. <code>x</code>, <code>y</code>, ...)</td>
 <td>Channel name</td>
 </tr>
 <tr>
-<td>l</td>
+<td style="text-align:right">l</td>
 <td></td>
 <td>non-capitalized identifier or number (e.g. <code>a</code>, <code>add</code>, <code>0</code>, ...)</td>
 <td>Label</td>
 </tr>
 <tr>
-<td>X</td>
+<td style="text-align:right">X</td>
 <td></td>
 <td>capitalized identifier (e.g. <code>S</code>, <code>T</code>, ...)</td>
 <td>Type name</td>
 </tr>
 <tr>
-<td>A</td>
+<td style="text-align:right">A</td>
 <td></td>
 <td>capitalized identifier (e.g. <code>A</code>, <code>Main</code>, ...)</td>
 <td>Process name</td>
 </tr>
 <tr>
-<td>π</td>
+<td style="text-align:right">π</td>
 <td>::=</td>
 <td><code>?</code></td>
 <td>Input polarity</td>
 </tr>
 <tr>
-<td></td>
+<td style="text-align:right"></td>
 <td></td>
 <td><code>!</code></td>
 <td>Output polarity</td>
 </tr>
 <tr>
-<td>Script</td>
+<td style="text-align:right">Script</td>
 <td>::=</td>
-<td>TypeDef₁ ... TypeDefₘ ProcessDef₁ ... ProcessDefₘ</td>
+<td>TypeDef₁ ... TypeDefₘ ProcessDef₁ ... ProcessDefₙ</td>
 <td></td>
 </tr>
 <tr>
-<td>TypeDef</td>
+<td style="text-align:right">TypeDef</td>
 <td>::=</td>
 <td>X <code>=</code> Type</td>
 <td>Type definition</td>
 </tr>
 <tr>
-<td>ProcessDef</td>
+<td style="text-align:right">ProcessDef</td>
 <td>::=</td>
 <td>A [<code>(</code> x₁ <code>:</code> Type <code>,</code> ... <code>,</code> xₙ <code>:</code> Type <code>)</code>] <code>=</code> Process</td>
 <td>Process definition</td>
 </tr>
 <tr>
-<td></td>
+<td style="text-align:right"></td>
 <td></td>
 <td>A [<code>(</code> x₁ <code>:</code> Type <code>,</code> ... <code>,</code> xₙ <code>:</code> Type <code>)</code>] <code>;</code></td>
 <td>Undefined process declaration</td>
 </tr>
 <tr>
-<td>Process</td>
+<td style="text-align:right">Process</td>
 <td>::=</td>
 <td><code>done</code></td>
 <td>Terminated process</td>
 </tr>
 <tr>
-<td></td>
+<td style="text-align:right"></td>
 <td></td>
 <td><code>close</code> x</td>
 <td>Signal output</td>
 </tr>
 <tr>
-<td></td>
+<td style="text-align:right"></td>
 <td></td>
 <td><code>wait</code> x <code>.</code> Process</td>
 <td>Signal input</td>
 </tr>
 <tr>
-<td></td>
+<td style="text-align:right"></td>
 <td></td>
 <td>x π <code>(</code> y <code>)</code> <code>.</code> Process</td>
 <td>Channel input/output</td>
 </tr>
 <tr>
-<td></td>
+<td style="text-align:right"></td>
 <td></td>
 <td>x π <code>{</code> l₁ <code>:</code> Process <code>,</code> ... <code>,</code> lₙ <code>:</code> Process <code>}</code></td>
 <td>Label input/output</td>
 </tr>
 <tr>
-<td></td>
+<td style="text-align:right"></td>
 <td></td>
 <td>x <code>!</code> l <code>.</code> Process</td>
 <td>Shortcut for label output</td>
 </tr>
 <tr>
-<td></td>
+<td style="text-align:right"></td>
 <td></td>
 <td><code>new</code> <code>(</code> x <code>:</code> Type <code>)</code> Process <code>in</code> Process</td>
 <td>New session</td>
 </tr>
 <tr>
-<td></td>
+<td style="text-align:right"></td>
 <td></td>
 <td>Process <code>⊕</code> Process</td>
 <td>Non-deterministic choice</td>
 </tr>
 <tr>
-<td></td>
+<td style="text-align:right"></td>
 <td></td>
 <td><code>⌈</code> x <code>:</code> Type <code>⌉</code> Process</td>
 <td>Cast</td>
 </tr>
 <tr>
-<td></td>
+<td style="text-align:right"></td>
 <td></td>
 <td>A [<code>⟨</code> x₁ <code>,</code> ... <code>,</code> xₙ <code>⟩</code>]</td>
 <td>Invocation</td>
 </tr>
 <tr>
-<td></td>
+<td style="text-align:right"></td>
 <td></td>
 <td><code>(</code> Process <code>)</code></td>
 <td>Bracketed process</td>
 </tr>
 <tr>
-<td>Type</td>
+<td style="text-align:right">Type</td>
 <td>::=</td>
 <td>π <code>end</code></td>
 <td>Terminated session</td>
 </tr>
 <tr>
-<td></td>
+<td style="text-align:right"></td>
 <td></td>
 <td>π Type <code>.</code> Type</td>
 <td>Channel input/output</td>
 </tr>
 <tr>
-<td></td>
+<td style="text-align:right"></td>
 <td></td>
 <td>π <code>{</code> l₁ <code>:</code> Type <code>,</code> ... <code>,</code> lₙ <code>:</code> Type <code>}</code></td>
 <td>Label input/output</td>
 </tr>
 <tr>
-<td></td>
+<td style="text-align:right"></td>
 <td></td>
 <td>π l <code>.</code> Type</td>
 <td>Shortcur for label input/output</td>
 </tr>
 <tr>
-<td></td>
+<td style="text-align:right"></td>
 <td></td>
 <td>Type <code>+</code> Type</td>
 <td>Shortcut for external choice (label input)</td>
 </tr>
 <tr>
-<td></td>
+<td style="text-align:right"></td>
 <td></td>
 <td>Type <code>⊕</code> Type</td>
 <td>Shortcur for internal choice (label output)</td>
 </tr>
 <tr>
-<td></td>
+<td style="text-align:right"></td>
 <td></td>
 <td>X</td>
 <td>Type name</td>
 </tr>
 <tr>
-<td></td>
+<td style="text-align:right"></td>
 <td></td>
 <td><code>rec</code> X <code>.</code> Type</td>
 <td>Recursive type</td>
 </tr>
 <tr>
-<td></td>
+<td style="text-align:right"></td>
 <td></td>
 <td><code>(</code> Type <code>)</code></td>
 <td>Bracketed type</td>
