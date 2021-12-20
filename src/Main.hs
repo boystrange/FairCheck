@@ -59,15 +59,13 @@ main = do
       let no_action = NoAction `elem` args
       let no_bounds = NoBounds `elem` args
       let no_checks = NoChecks `elem` args
-      let strong_unfair = Strong `elem` args
-      let weak_unfair = Weak `elem` args
+      let unfair = Unfair `elem` args
+      let weak = Weak `elem` args
       when logging
         (do putStr $ takeFileName file ++ " ... "
             hFlush stdout)
       start <- getCurrentTime
-      let subt = if weak_unfair then Relation.weakSubtype
-                 else if strong_unfair then Relation.strongSubtype
-                      else Relation.fairSubtype
+      let subt = (if unfair then Relation.unfairSubtype else Relation.fairSubtype) weak
       unless no_action $ Checker.checkActionBoundedness pdefs
       unless no_bounds $ Checker.checkRanks pdefs
       unless no_checks $ Checker.checkTypes subt pdefs
@@ -90,7 +88,7 @@ data Flag = Verbose  -- -v --verbose
           | NoAction -- -a
           | NoBounds -- -b
           | NoChecks -- -c
-          | Strong   -- -s
+          | Unfair   -- -u
           | Weak     -- -w
             deriving (Eq, Ord)
 
@@ -101,8 +99,8 @@ flags =
    , Option "a" []           (NoArg NoAction)    "Disable action boundedness checking"
    , Option "b" []           (NoArg NoBounds)    "Disable session and cast boundedness checking"
    , Option "c" []           (NoArg NoChecks)    "Disable session type checking"
-   , Option "s" []           (NoArg Strong)      "Use strong unfair subtyping"
-   , Option "w" []           (NoArg Weak)        "Use weak unfair subtyping"
+   , Option "u" []           (NoArg Unfair)      "Use unfair subtyping"
+   , Option "w" []           (NoArg Weak)        "Use weak subtyping"
    , Option "v" ["verbose"]  (NoArg Verbose)     "Print type checking activities"
    , Option "V" ["version"]  (NoArg Version)     "Print version information"
    , Option "h" ["help"]     (NoArg Help)        "Print this help message" ]

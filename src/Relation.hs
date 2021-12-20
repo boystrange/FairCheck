@@ -17,7 +17,7 @@
 
 -- |Implementation of session type equality, unfair subtyping and fair subtyping
 -- decision algorithms.
-module Relation (equality, strongSubtype, weakSubtype, fairSubtype) where
+module Relation (equality, unfairSubtype, fairSubtype) where
 
 import Data.Set (Set)
 import qualified Data.Set as Set
@@ -49,11 +49,8 @@ equality :: (Ord u, Ord v) => Relation u v
 equality = relation Tree.equalityCmp
 
 -- | Unfair subtyping relation over session types.
-strongSubtype :: Ord u => Relation u u
-strongSubtype = relation Tree.strongSubCmp
-
-weakSubtype :: Ord u => Relation u u
-weakSubtype = relation Tree.weakSubCmp
+unfairSubtype :: Ord u => Bool -> Relation u u
+unfairSubtype weak = relation (if weak then Tree.weakSubCmp else Tree.strongSubCmp)
 
 -- | Convergence relation over session types (see 'fairSubtype' below for
 -- references to the papers in which the convergence relation is defined).
@@ -65,8 +62,10 @@ converge f g = not (Predicate.viable (Tree.difference f g))
 -- described in the papers /Fair Subtyping for Multi-Party Session Types/
 -- <http://dx.doi.org/10.1017/S096012951400022X> and /Fair Subtyping for Open/
 -- /Session Types/ <http://dx.doi.org/10.1007/978-3-642-39212-2_34>.
-fairSubtype :: (Ord u, Ord v) => Relation u v
-fairSubtype = relation cmp
+fairSubtype :: Ord u => Bool -> Relation u u
+fairSubtype weak = relation cmp
   where
-    cmp f g | converge f g = Tree.strongSubCmp f g
+    cmp f g | converge f g = rel f g
             | otherwise = Nothing
+
+    rel = if weak then Tree.weakSubCmp else Tree.strongSubCmp
