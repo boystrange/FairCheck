@@ -220,6 +220,10 @@ type Comparator u v = Tree u -> Tree v -> Maybe ([(Tree u, Tree v)], [(Tree u, T
 equalityCmp :: (Ord u, Ord v) => Comparator u v
 equalityCmp f g = Node.equalityCmp (unfold f) (unfold g)
 
--- |Subtyping comparison for regular trees.
-subtypeCmp :: (Ord u, Ord v) => Comparator u v
-subtypeCmp f g = Node.subtypeCmp (unfold f) (unfold g)
+-- | Strong subtyping comparison for regular trees.
+strongSubCmp :: (Ord u, Ord v) => Comparator u v
+strongSubCmp f g = Node.strongSubCmp (unfold f) (unfold g)
+
+-- | Weak subtyping comparison for regular trees.
+weakSubCmp :: Ord u => Comparator u u
+weakSubCmp f g = Node.weakSubCmp (unfold f) (unfold g)

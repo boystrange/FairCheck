@@ -33,8 +33,9 @@ import Atoms (Polarity(..), Label, dualP)
 data Merge u v = OnlyLeft u | OnlyRight v | Both u v
   deriving (Eq, Ord)
 
--- |Compute the difference of two maps, keeping those elements found in the left
--- map but not in the second, and pairing those elements found in both maps.
+-- | Compute the difference of two maps, keeping those elements
+-- found in the left map but not in the second, and pairing those
+-- elements found in both maps.
 diffMap :: Ord k => Map k a -> Map k b -> Map k (Merge a b)
 diffMap = Merge.merge aux Merge.dropMissing (Merge.zipWithMatched (const Both))
   where
@@ -53,12 +54,13 @@ data Node u
   | Label Polarity (Map Label u)
   deriving (Eq, Ord)
 
--- |A __node comparator__ is a function taking two nodes and returning either
--- 'Nothing', if the comparison fails, or 'Just' two lists of pairs of node
--- identifiers that must be compared in turn. The first list refers to
--- nodes that must be checked for __equality__, whereas the second list refers
--- to nodes that must be compared corecursively, according to the same
--- comparison being made between the two initial nodes.
+-- | A __node comparator__ is a function taking two nodes and
+-- returning either 'Nothing', if the comparison fails, or 'Just'
+-- two lists of pairs of node identifiers that must be compared in
+-- turn. The first list refers to nodes that must be checked for
+-- __equality__, whereas the second list refers to nodes that must
+-- be compared corecursively, according to the same comparison being
+-- made between the two initial nodes.
 type Comparator u v = Node u -> Node v -> Maybe ([(u, v)], [(u, v)])
 
 instance Show u => Show (Node u) where
@@ -100,17 +102,26 @@ equalityCmp (Label p um) (Label q vm) | p == q
                                       , Map.keysSet um == Map.keysSet vm = Just ([], Prelude.map snd (Map.toList (zipMap um vm)))
 equalityCmp _ _ = Nothing
 
--- | Subtyping comparison for nodes. The subtyping relation between nodes is
--- essentially the same described in the paper /Subtyping for session types in/
--- /the pi calculus/ <https://doi.org/10.1007/s00236-005-0177-z>, except that
--- higher-order session types are __invariant__ with respect to the type of
--- channel being sent as a message.
-subtypeCmp :: (Ord u, Ord v) => Comparator u v
-subtypeCmp (End p) (End q) | p == q = Just ([], [])
-subtypeCmp (Channel p u1 u2) (Channel q v1 v2) | p == q = Just ([(u1, v1)], [(u2, v2)])
-subtypeCmp (Label In um) (Label In vm) | Map.keysSet um `Set.isSubsetOf` Map.keysSet vm = Just ([], Prelude.map snd (Map.toList (zipMap um vm)))
-subtypeCmp (Label Out um) (Label Out vm) | Map.keysSet vm `Set.isSubsetOf` Map.keysSet um = Just ([], Prelude.map snd (Map.toList (zipMap um vm)))
-subtypeCmp _ _ = Nothing
+-- | Strong subtyping comparison for nodes. This differs from weak
+-- subtyping in that higher-order session types are __invariant__
+-- with respect to the type of channel being sent as a message.
+strongSubCmp :: (Ord u, Ord v) => Comparator u v
+strongSubCmp (End p) (End q) | p == q = Just ([], [])
+strongSubCmp (Channel p u1 u2) (Channel q v1 v2) | p == q = Just ([(u1, v1)], [(u2, v2)])
+strongSubCmp (Label In um) (Label In vm) | Map.keysSet um `Set.isSubsetOf` Map.keysSet vm = Just ([], Prelude.map snd (Map.toList (zipMap um vm)))
+strongSubCmp (Label Out um) (Label Out vm) | Map.keysSet vm `Set.isSubsetOf` Map.keysSet um = Just ([], Prelude.map snd (Map.toList (zipMap um vm)))
+strongSubCmp _ _ = Nothing
+
+-- | Weak subtyping comparison for nodes. This is the the same
+-- relation defined in the paper /Subtyping for session types in/
+-- /the pi calculus/ <https://doi.org/10.1007/s00236-005-0177-z>.
+weakSubCmp :: Ord u => Comparator u u
+weakSubCmp (End p) (End q) | p == q = Just ([], [])
+weakSubCmp (Channel In u1 u2) (Channel In v1 v2) = Just ([], [(u1, v1), (u2, v2)])
+weakSubCmp (Channel Out u1 u2) (Channel Out v1 v2) = Just ([], [(v1, u1), (u2, v2)])
+weakSubCmp (Label In um) (Label In vm) | Map.keysSet um `Set.isSubsetOf` Map.keysSet vm = Just ([], Prelude.map snd (Map.toList (zipMap um vm)))
+weakSubCmp (Label Out um) (Label Out vm) | Map.keysSet vm `Set.isSubsetOf` Map.keysSet um = Just ([], Prelude.map snd (Map.toList (zipMap um vm)))
+weakSubCmp _ _ = Nothing
 
 -- | Behavioral difference between two nodes. The result is either a singleton
 -- list with the result of the difference or the empty list if the difference is
