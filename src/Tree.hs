@@ -176,7 +176,7 @@ dual (Tree i m) = Tree (Right i) (disjointUnion ml mr)
     mr = mapNodeMap Right Node.dual m
 
 -- |Compute the behavioral difference between two regular trees.
-difference :: (Ord u, Ord v) => Tree u -> Tree v -> Tree (Node.Merge u v)
+difference :: Ord u => Tree u -> Tree u -> Tree (Node.Merge u u)
 difference (Tree i1 m1) (Tree i2 m2) = Tree (Node.Both i1 i2) m
   where
     ml = mapNodeMap Node.OnlyLeft (Node.map Node.OnlyLeft) m1
@@ -214,16 +214,16 @@ reduce g@(Tree u nodem) = Tree u (Map.filterWithKey (\v _ -> v `Set.member` uset
 -- returning either 'Nothing', if the comparison fails, or 'Just' two lists of
 -- pairs of regular trees that must be compared in turn, where the meaning of
 -- the two lists is the same as for a 'Node.Comparator'.
-type Comparator u v = Tree u -> Tree v -> Maybe ([(Tree u, Tree v)], [(Tree u, Tree v)])
+type Comparator u = Tree u -> Tree u -> Maybe ([(Tree u, Tree u)], [(Tree u, Tree u)])
 
 -- |Equality comparison for regular trees.
-equalityCmp :: (Ord u, Ord v) => Comparator u v
+equalityCmp :: Ord u => Comparator u
 equalityCmp f g = Node.equalityCmp (unfold f) (unfold g)
 
 -- | Strong subtyping comparison for regular trees.
-strongSubCmp :: (Ord u, Ord v) => Comparator u v
+strongSubCmp :: Ord u => Comparator u
 strongSubCmp f g = Node.strongSubCmp (unfold f) (unfold g)
 
 -- | Weak subtyping comparison for regular trees.
-weakSubCmp :: Ord u => Comparator u u
+weakSubCmp :: Ord u => Comparator u
 weakSubCmp f g = Node.weakSubCmp (unfold f) (unfold g)

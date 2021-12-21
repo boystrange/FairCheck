@@ -45,8 +45,7 @@ main = do
   progName <- getProgName
   (args, file) <- getArgs >>= parse progName
   source <- if file == "-" then getContents else readFile file
-  let result = parseProcess file source
-  case result of
+  case parseProcess file source of
     Left msg -> printWarning msg
     Right (tdefs, pdefs) ->
       let pdefs' = Resolver.resolve tdefs pdefs in
@@ -99,8 +98,8 @@ flags =
    , Option "a" []           (NoArg NoAction)    "Disable action boundedness checking"
    , Option "b" []           (NoArg NoBounds)    "Disable session and cast boundedness checking"
    , Option "c" []           (NoArg NoChecks)    "Disable session type checking"
-   , Option "u" []           (NoArg Unfair)      "Use unfair subtyping"
-   , Option "w" []           (NoArg Weak)        "Use weak subtyping"
+   , Option "u" ["unfair"]   (NoArg Unfair)      "Use unfair subtyping"
+   , Option "w" ["weak"]     (NoArg Weak)        "Use weak subtyping"
    , Option "v" ["verbose"]  (NoArg Verbose)     "Print type checking activities"
    , Option "V" ["version"]  (NoArg Version)     "Print version information"
    , Option "h" ["help"]     (NoArg Help)        "Print this help message" ]

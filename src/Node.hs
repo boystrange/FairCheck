@@ -61,7 +61,7 @@ data Node u
 -- __equality__, whereas the second list refers to nodes that must
 -- be compared corecursively, according to the same comparison being
 -- made between the two initial nodes.
-type Comparator u v = Node u -> Node v -> Maybe ([(u, v)], [(u, v)])
+type Comparator u = Node u -> Node u -> Maybe ([(u, u)], [(u, u)])
 
 instance Show u => Show (Node u) where
   show Nil = "<nil>"
@@ -95,7 +95,7 @@ map f (Channel pol i j) = Channel pol (f i) (f j)
 map f (Label pol bm) = Label pol (Map.map f bm)
 
 -- |Equality comparison for nodes.
-equalityCmp :: (Ord u, Ord v) => Comparator u v
+equalityCmp :: Ord u => Comparator u
 equalityCmp (End p) (End q) | p == q = Just ([], [])
 equalityCmp (Channel p u1 u2) (Channel q v1 v2) | p == q = Just ([], [(u1, v1), (u2, v2)])
 equalityCmp (Label p um) (Label q vm) | p == q
@@ -105,7 +105,7 @@ equalityCmp _ _ = Nothing
 -- | Strong subtyping comparison for nodes. This differs from weak
 -- subtyping in that higher-order session types are __invariant__
 -- with respect to the type of channel being sent as a message.
-strongSubCmp :: (Ord u, Ord v) => Comparator u v
+strongSubCmp :: Ord u => Comparator u
 strongSubCmp (End p) (End q) | p == q = Just ([], [])
 strongSubCmp (Channel p u1 u2) (Channel q v1 v2) | p == q = Just ([(u1, v1)], [(u2, v2)])
 strongSubCmp (Label In um) (Label In vm) | Map.keysSet um `Set.isSubsetOf` Map.keysSet vm = Just ([], Prelude.map snd (Map.toList (zipMap um vm)))
@@ -115,7 +115,7 @@ strongSubCmp _ _ = Nothing
 -- | Weak subtyping comparison for nodes. This is the the same
 -- relation defined in the paper /Subtyping for session types in/
 -- /the pi calculus/ <https://doi.org/10.1007/s00236-005-0177-z>.
-weakSubCmp :: Ord u => Comparator u u
+weakSubCmp :: Ord u => Comparator u
 weakSubCmp (End p) (End q) | p == q = Just ([], [])
 weakSubCmp (Channel In u1 u2) (Channel In v1 v2) = Just ([], [(u1, v1), (u2, v2)])
 weakSubCmp (Channel Out u1 u2) (Channel Out v1 v2) = Just ([], [(v1, u1), (u2, v2)])
@@ -128,7 +128,7 @@ weakSubCmp _ _ = Nothing
 -- undefined. For the definition of behavioral difference between session types
 -- see the paper /Fair Subtyping for Multi-Party Session Types/
 -- <http://dx.doi.org/10.1017/S096012951400022X>.
-difference :: Node u -> Node v -> [Node (Merge u v)]
+difference :: Node u -> Node u -> [Node (Merge u u)]
 difference (Channel p i1 i2) (Channel q _ j2) | p == q = [Channel p (OnlyLeft i1) (Both i2 j2)]
 difference (Label In bm1) (Label In bm2) | Map.keysSet bm1 `Set.isSubsetOf` Map.keysSet bm2 = [Label In (diffMap bm1 bm2)]
 difference (Label Out bm1) (Label Out bm2) | Map.keysSet bm2 `Set.isSubsetOf` Map.keysSet bm1 = [Label Out (diffMap bm1 bm2)]

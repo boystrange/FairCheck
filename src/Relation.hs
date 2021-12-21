@@ -30,12 +30,12 @@ import qualified Node
 import qualified Predicate
 
 -- | Shortcut for a binary relation over session types.
-type Relation u v = Tree u -> Tree v -> Bool
+type Relation u = Tree u -> Tree u -> Bool
 
 -- | Generic coinductive relation over session types. The provided
 -- 'Tree.Comparator' is used to compute the list of pairs of subtrees that must
 -- be compared in turn.
-relation :: (Ord u, Ord v) => Tree.Comparator u v -> Relation u v
+relation :: Ord u => Tree.Comparator u -> Relation u
 relation cmp = aux Set.empty
   where
     aux vset f g | Set.member (f, g) vset = True
@@ -45,16 +45,16 @@ relation cmp = aux Set.empty
     aux _ _ _ = False
 
 -- | Equality relation over session types.
-equality :: (Ord u, Ord v) => Relation u v
+equality :: Ord u => Relation u
 equality = relation Tree.equalityCmp
 
 -- | Unfair subtyping relation over session types.
-unfairSubtype :: Ord u => Bool -> Relation u u
+unfairSubtype :: Ord u => Bool -> Relation u
 unfairSubtype weak = relation (if weak then Tree.weakSubCmp else Tree.strongSubCmp)
 
 -- | Convergence relation over session types (see 'fairSubtype' below for
 -- references to the papers in which the convergence relation is defined).
-converge :: (Ord u, Ord v) => Relation u v
+converge :: Ord u => Relation u
 converge f g = not (Predicate.viable (Tree.difference f g))
 
 -- | Fair subtyping relation over session types (Table 1). This implementation
@@ -62,7 +62,7 @@ converge f g = not (Predicate.viable (Tree.difference f g))
 -- described in the papers /Fair Subtyping for Multi-Party Session Types/
 -- <http://dx.doi.org/10.1017/S096012951400022X> and /Fair Subtyping for Open/
 -- /Session Types/ <http://dx.doi.org/10.1007/978-3-642-39212-2_34>.
-fairSubtype :: Ord u => Bool -> Relation u u
+fairSubtype :: Ord u => Bool -> Relation u
 fairSubtype weak = relation cmp
   where
     cmp f g | converge f g = rel f g
