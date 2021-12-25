@@ -37,7 +37,7 @@ import System.FilePath.Posix (takeFileName)
 
 -- |Version of the program.
 version :: Data.Version.Version
-version = Data.Version.makeVersion [1, 1]
+version = Data.Version.makeVersion [1, 2]
 
 -- |Entry point.
 main :: IO ()

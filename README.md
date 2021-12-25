@@ -39,6 +39,8 @@ against the implementation of `FairCheck` in the corresponding section below.
    boundedness was not enforced (Section 5.3)](#claim-8)
 9. [The program in Eq. (9) is ill typed because it uses unfair subtyping
    (Section 5.3)](#claim-9)
+10. [The program in Eq. (10) would be well typed if fair subtyping allowed for
+    covariance of higher-order session types (Section 7)](#claim-10)
 
 ## Download, installation, and sanity-testing
 
@@ -514,6 +516,44 @@ subtyping** is used instead of fair subtyping by passing the `-u` option to
 ``` bash
 $ faircheck -u artifact/equation_9.pi
 OK
+```
+
+### Claim 10
+
+The script [`equation_10.pi`](artifact/equation_10.pi) contains the definitions
+of the program shown in Eq. (10).
+
+``` pi
+type SA = !more.!TA.SB
+type SB = ?more.?SA.TA + ?stop.?end
+type TA = !more.!TA.SB ⊕ !stop.!end
+
+A(x : SA, y : TA) = x!more.x!(y).B⟨x⟩
+B(x : SB)         = x?{more: x?(y).A⟨y, x⟩, stop: wait x.done}
+Main              = new (y : TA)
+                      new (x : TA) ⌈x : SA⌉ A⟨x, y⟩ in ⌈x : SB⌉ B⟨x⟩
+                    in n ⌈y : SB⌉ B⟨y⟩
+```
+
+The purpose of this example is to show that, if fair subtyping allowed for
+co/contra-variance of higher-order session types, there would be well-typed
+programs that are action bounded, session bounded, cast bounded and yet non
+terminating. In particular, the above program relies on covariance of
+higher-order session types in order to establish that the dual of `TA` is a fair
+subtype of `SB`. We can verify that the program is well typed if covariance is
+allowed by passing the `-w` option to `FairCheck`, which enables **weak**
+subtyping with co-/contra-variance.
+
+``` bash
+$ faircheck -w artifact/equation_10.pi
+OK
+```
+
+On the contrary, using invariant fair subtyping as defined in the paper the
+program is ill typed.
+
+``` bash
+NO: invalid cast for x [line 8]: rec X₁₅.?{ more: ?[rec X₇.!{ more: ![X₇].rec X₄.?{ more: ?[!more.![X₇].X₄].X₇, stop: ?end }, stop: !end }].!{ more: ![rec X₁.!more.![rec X₇.!{ more: ![X₇].?{ more: ?[X₁].X₇, stop: ?end }, stop: !end }].rec X₄.?{ more: ?[X₁].rec X₇.!{ more: ![X₇].X₄, stop: !end }, stop: ?end }].X₁₅, stop: !end }, stop: ?end } is not a fair subtype of rec X₁₁.?{ more: ?[!more.![rec X₃.!{ more: ![X₃].X₁₁, stop: !end }].X₁₁].rec X₈.!{ more: ![X₈].X₁₁, stop: !end }, stop: ?end }
 ```
 
 ## Additional artifact description
