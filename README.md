@@ -532,7 +532,7 @@ A(x : SA, y : TA) = x!more.x⟨y⟩.B⟨x⟩
 B(x : SB)         = x?{more: x(y).A⟨y, x⟩, stop: wait x.done}
 Main              = new (y : TA)
                       new (x : TA) ⌈x : SA⌉ A⟨x, y⟩ in ⌈x : SB⌉ B⟨x⟩
-                    in n ⌈y : SB⌉ B⟨y⟩
+                    in ⌈y : SB⌉ B⟨y⟩
 ```
 
 The purpose of this example is to show that, if fair subtyping allowed for
