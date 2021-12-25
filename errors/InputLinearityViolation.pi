@@ -1,1 +1,1 @@
-A(x : ?(!end).!end) = x?(x).close x
+A(x : ?(!end).!end) = x(x).close x

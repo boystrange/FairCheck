@@ -616,7 +616,8 @@ scripts. Square brackets enclose optional parts of the syntax.
 |    Process | ::= | `done`                                                           | Terminated process                          |
 |            |     | `close` x                                                        | Signal output                               |
 |            |     | `wait` x `.` Process                                             | Signal input                                |
-|            |     | x π `(` y `)` `.` Process                                        | Channel input/output                        |
+|            |     | x `(` y `)` `.` Process                                          | Channel input                               |
+|            |     | x `⟨` y `⟩` `.` Process                                          | Channel output                              |
 |            |     | x π `{` l₁ `:` Process `,` ... `,` lₙ `:` Process `}`            | Label input/output                          |
 |            |     | x `!` l `.` Process                                              | Shortcut for label output                   |
 |            |     | `new` `(` x `:` Type `)` Process `in` Process                    | New session                                 |

@@ -1,6 +1,6 @@
 A(y : rec X.!X.?end) =
-  new (x : rec X.?X.!end) x?(z).B⟨x, z⟩
+  new (x : rec X.?X.!end) x(z).B⟨x, z⟩
   in  // with the wrong dual x has type rec X.!X.?end and this type checks
-      x!(y).wait x.done
+      x⟨y⟩.wait x.done
 
 B(x : !end, z : rec X.?X.!end);

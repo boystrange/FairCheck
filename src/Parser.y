@@ -118,7 +118,8 @@ Process
   | '(' Process ')' { $2 }
   | CLOSE ChannelName { Close $2 }
   | WAIT ChannelName '.' Process { Wait $2 $4 }
-  | ChannelName Polarity '(' ChannelName ')' '.' Process { Channel $1 $2 $4 $7 }
+  | ChannelName '(' ChannelName ')' '.' Process { Channel $1 In $3 $6 }
+  | ChannelName '⟨' ChannelName '⟩' '.' Process { Channel $1 Out $3 $6 }
   | ChannelName Polarity Label '.' Process { Label $1 $2 [($3, $5)] }
   | ChannelName Polarity Cases { Label $1 $2 $3 }
   | NEW '(' ChannelName ':' Type ')' Process IN Process { New $3 $5 $7 $9 }

@@ -1,1 +1,1 @@
-A(x : !end, y : !end) = x!(y).close x
+A(x : !end, y : !end) = x⟨y⟩.close x
