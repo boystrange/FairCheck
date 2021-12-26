@@ -32,6 +32,7 @@ executable faircheck
                      Relation,
                      Predicate,
                      Checker,
+                     Interpreter,
                      Render,
                      Exceptions
   other-extensions:  CPP
@@ -43,7 +44,8 @@ executable faircheck
                      time >=1.5,
                      filepath >=1.4,
                      prettyprinter >=1.0,
-                     prettyprinter-ansi-terminal >=1.0
+                     prettyprinter-ansi-terminal >=1.0,
+                     random >=1.2.1
 
   hs-source-dirs:    src
   build-tools:       alex, happy

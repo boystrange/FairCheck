@@ -74,7 +74,8 @@ pn (New _ _ p q) = Set.union (pn p) (pn q)
 pn (Choice _ p) = pn p
 pn (Cast _ _ p) = pn p
 
--- |A __process definition__ is a triple made of a process name, a list of name
--- declarations and an optional process body. When the body is 'Nothing' the
--- process is declared and assumed to be well typed but is left unspecified.
+-- | A __process definition__ is a triple made of a process name, a
+-- list of name declarations and an optional process body. When the
+-- body is 'Nothing' the process is declared and assumed to be well
+-- typed but is left unspecified.
 type ProcessDef = (ProcessName, [(ChannelName, Type)], Maybe Process)

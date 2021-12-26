@@ -21,10 +21,11 @@ module Main (main) where
 import qualified Relation
 import qualified Resolver
 import qualified Checker
+import Atoms
 import Render
 import Exceptions (MyException)
 import Parser (parseProcess)
-import Process (ProcessDef)
+import Process
 import System.Console.GetOpt
 import System.IO (stdout, stderr, hFlush, hPutStrLn)
 import System.Exit (exitWith, ExitCode(ExitSuccess, ExitFailure))
@@ -34,6 +35,7 @@ import Control.Exception (catch)
 import qualified Data.Version
 import Data.Time (getCurrentTime, diffUTCTime)
 import System.FilePath.Posix (takeFileName)
+import qualified Interpreter
 
 -- |Version of the program.
 version :: Data.Version.Version
@@ -60,6 +62,7 @@ main = do
       let no_checks = NoChecks `elem` args
       let unfair = Unfair `elem` args
       let weak = Weak `elem` args
+      let run = Run `elem` args
       when logging
         (do putStr $ takeFileName file ++ " ... "
             hFlush stdout)
@@ -71,6 +74,7 @@ main = do
       stop <- getCurrentTime
       printOK (if logging then Just (show (diffUTCTime stop start)) else Nothing)
       when verbose $ forM_ pdefs (printRank pdefs)
+      when run $ Interpreter.run pdefs (Call (Identifier Somewhere "Main") [])
 
     printRank :: [ProcessDef] -> ProcessDef -> IO ()
     printRank pdefs (pname, _, Just p) = putStrLn $ "process " ++ show pname ++ " has rank " ++ show (Checker.rank pdefs p)
@@ -87,8 +91,9 @@ data Flag = Verbose  -- -v --verbose
           | NoAction -- -a
           | NoBounds -- -b
           | NoChecks -- -c
-          | Unfair   -- -u
-          | Weak     -- -w
+          | Unfair   -- -u --unfair
+          | Weak     -- -w --weak
+          | Run      -- -r --run
             deriving (Eq, Ord)
 
 -- |List of supported flags.
@@ -102,6 +107,7 @@ flags =
    , Option "w" ["weak"]     (NoArg Weak)        "Use weak subtyping"
    , Option "v" ["verbose"]  (NoArg Verbose)     "Print type checking activities"
    , Option "V" ["version"]  (NoArg Version)     "Print version information"
+   , Option "r" ["run"]      (NoArg Run)         "Run process"
    , Option "h" ["help"]     (NoArg Help)        "Print this help message" ]
 
 -- |The information displayed when the verbose option is specified.
