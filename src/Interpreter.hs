@@ -23,9 +23,12 @@ import System.Random (randomIO)
 import qualified Data.List as List
 import Data.IORef
 import Control.Monad (when, unless)
+import Control.Exception (throw)
 
 import Atoms
 import Process
+import Exceptions
+import Render
 
 -- | State of the interpreter, consisting of a pair of references
 -- respectively containing the index of the next session to be
@@ -80,11 +83,14 @@ subst = auxP
     auxG :: Substitution -> (Label, Process) -> (Label, Process)
     auxG σ (l, p) = (l, auxP σ p)
 
+runtimeError :: String -> a
+runtimeError = throw . ErrorRuntime
+
 -- | Flattens a process into a list of threads, expanding process
 -- invocations, creating new sessions, performing choices and
 -- discarding casts.
-threads :: ProcessMap -> InterpreterS -> Process -> IO [Thread]
-threads pmap state = aux
+threads :: Bool -> ProcessMap -> InterpreterS -> Process -> IO [Thread]
+threads logging pmap state = aux
   where
     aux Done = return []
     aux p@(Close u) = return [(u, p)]
@@ -93,15 +99,15 @@ threads pmap state = aux
     aux p@(Label u _ _) = return [(u, p)]
     aux (Call pname us) = do
       case Map.lookup pname pmap of
-        Nothing -> error $ "undefined process " ++ show pname
+        Nothing -> runtimeError $ "undefined process " ++ show pname
         Just (xs, p) -> do
-          unless (length us == length xs) (error "wrong number of arguments")
+          unless (length us == length xs) $ runtimeError $ "wrong number of arguments when invoking " ++ show pname
           let σ = Map.fromList (zip xs us)
           aux (subst σ p)
     aux (New x t p q) = do
       u <- newSession state
       tick state
-      putStrLn $ "=> creating new session " ++ show u
+      when logging $ printWarning $ "=> creating new session " ++ show u
       let σ = Map.fromList [(x, u)]
       ps <- aux (subst σ p)
       qs <- aux (subst σ q)
@@ -109,7 +115,7 @@ threads pmap state = aux
     aux (Choice p q) = do
       b <- randomIO :: IO Bool
       tick state
-      putStrLn $ "=> performing an internal choice"
+      when logging $ printWarning $ "=> performing an internal choice " ++ show b
       if b then aux p else aux q
     aux (Cast _ _ p) = aux p
 
@@ -126,43 +132,46 @@ pick xs = do
 
 -- | Performs all the reductions from a list of processes guarded by
 -- actions with the same subject.
-reduce :: InterpreterS -> [Process] -> IO [Process]
-reduce state [Close u, Wait _ p] = do
-  putStrLn $ "=> closing session " ++ show u
-  tick state
-  return [p]
-reduce state [p@(Wait _ _), q@(Close _)] = reduce state [q, p]
-reduce state [Channel u Out v p, Channel _ In x q] = do
-  putStrLn $ "=> delegation of " ++ show v ++ " on " ++ show u
-  tick state
-  let σ = Map.fromList [(x, v)]
-  return [p, subst σ q]
-reduce state [p@(Channel _ In _ _), q@(Channel _ Out _ _)] = reduce state [q, p]
-reduce state [Label u Out gs, Label _ In fs] = do
-  (tag, p) <- pick gs
-  case lookup tag fs of
-    Nothing -> error $ "communication error when sending " ++ show tag
-    Just q -> do
-      putStrLn $ "=> label " ++ show tag ++ " on " ++ show u
+reduce :: Bool -> InterpreterS -> [Process] -> IO [Process]
+reduce logging state = aux
+  where
+    aux [] = error "this should not happen"
+    aux [p] = return [p]
+    aux [Close u, Wait _ p] = do
+      when logging $ printWarning $ "=> closing session " ++ show u
       tick state
-      return [p, q]
-reduce state [p@(Label _ In _), q@(Label _ Out _)] = reduce state [q, p]
-reduce _ [p] = return [p]
-reduce _ _ = error "cannot reduce these processes"
+      return [p]
+    aux [p@(Wait _ _), q@(Close _)] = aux [q, p]
+    aux [Channel u Out v p, Channel _ In x q] = do
+      when logging $ printWarning $ "=> delegation of " ++ show v ++ " on " ++ show u
+      tick state
+      let σ = Map.fromList [(x, v)]
+      return [p, subst σ q]
+    aux [p@(Channel _ In _ _), q@(Channel _ Out _ _)] = aux [q, p]
+    aux [Label u Out gs, Label _ In fs] = do
+      (tag, p) <- pick gs
+      case lookup tag fs of
+        Nothing -> runtimeError $ "communication error when sending " ++ show tag
+        Just q -> do
+          when logging $ printWarning $ "=> label " ++ show tag ++ " on " ++ show u
+          tick state
+          return [p, q]
+    aux [p@(Label _ In _), q@(Label _ Out _)] = aux [q, p]
+    aux [_, _] = runtimeError "communication error"
+    aux (_ : _ : _ : _) = runtimeError "linearity violation"
 
 -- | Perform all possible reductions of a given list of threads.
-reduceAll :: InterpreterS -> [Thread] -> IO [Process]
-reduceAll state ts = do
+reduceAll :: Bool -> InterpreterS -> [Thread] -> IO [Process]
+reduceAll logging state ts = do
   let sorted = List.sortBy (\(a, _) (b, _) -> compare a b) ts
   let pss = map (map snd) $ List.groupBy (\(a, _) (b, _) -> a == b) sorted
-  when (any (\ts -> length ts > 2) pss) $ error "linearity violation"
-  when (not (null ts) && all (\ts -> length ts < 2) pss) $ error "deadlock"
-  qss <- mapM (reduce state) pss
+  when (not (null ts) && all (\ts -> length ts < 2) pss) $ runtimeError "deadlock"
+  qss <- mapM (reduce logging state) pss
   return $ concat qss
 
 -- | Run a process.
-run :: [ProcessDef] -> Process -> IO ()
-run pdefs p = do
+run :: Bool -> [ProcessDef] -> Process -> IO ()
+run logging pdefs p = do
   ref1 <- newIORef 0
   ref2 <- newIORef 0
   aux (ref1, ref2) [p]
@@ -173,8 +182,8 @@ run pdefs p = do
     aux :: InterpreterS -> [Process] -> IO [Process]
     aux _ [] = return []
     aux state ps = do
-      ts <- concat <$> mapM (threads pmap state) ps
-      qs <- reduceAll state ts
+      ts <- concat <$> mapM (threads logging pmap state) ps
+      qs <- reduceAll logging state ts
       aux state qs
 
     pmap :: ProcessMap

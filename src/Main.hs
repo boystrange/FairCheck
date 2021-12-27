@@ -74,7 +74,7 @@ main = do
       stop <- getCurrentTime
       printOK (if logging then Just (show (diffUTCTime stop start)) else Nothing)
       when verbose $ forM_ pdefs (printRank pdefs)
-      when run $ Interpreter.run pdefs (Call (Identifier Somewhere "Main") [])
+      when run $ Interpreter.run verbose pdefs (Call (Identifier Somewhere "Main") [])
 
     printRank :: [ProcessDef] -> ProcessDef -> IO ()
     printRank pdefs (pname, _, Just p) = putStrLn $ "process " ++ show pname ++ " has rank " ++ show (Checker.rank pdefs p)
@@ -105,7 +105,7 @@ flags =
    , Option "c" []           (NoArg NoChecks)    "Disable session type checking"
    , Option "u" ["unfair"]   (NoArg Unfair)      "Use unfair subtyping"
    , Option "w" ["weak"]     (NoArg Weak)        "Use weak subtyping"
-   , Option "v" ["verbose"]  (NoArg Verbose)     "Print type checking activities"
+   , Option "v" ["verbose"]  (NoArg Verbose)     "Print type checking and running activities"
    , Option "V" ["version"]  (NoArg Version)     "Print version information"
    , Option "r" ["run"]      (NoArg Run)         "Run process"
    , Option "h" ["help"]     (NoArg Help)        "Print this help message" ]

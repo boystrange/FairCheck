@@ -1,0 +1,5 @@
+Main = new (x : !end)
+         new (y : !end)
+	   wait x.close y
+	 in wait y.close x
+       in done

@@ -42,6 +42,7 @@ data MyException
   | ErrorInvalidType String
   | ErrorInvalidCast ChannelName Type Type
   | ErrorLinearity [ChannelName]
+  | ErrorRuntime String
 
 instance Exception MyException
 
@@ -64,3 +65,4 @@ instance Show MyException where
   show (ErrorLabelMismatch name elabels alabels) = "labels mismatch for " ++ showWithPos name ++ ": expected " ++ show elabels ++ ", actual " ++ show alabels
   show (ErrorTypeUnbounded name) = "unbounded type: " ++ showWithPos name
   show (ErrorTypeNonContractive tname) = "non-contractive type: " ++ showWithPos tname
+  show (ErrorRuntime msg) = "runtime error: " ++ msg
