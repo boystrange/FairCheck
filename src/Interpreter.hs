@@ -155,6 +155,7 @@ reduce logging state = aux
 reduceAll :: Bool -> InterpreterS -> [Process] -> IO [Process]
 reduceAll logging state ps = do
   pps <- mapM tryReduce $ Map.elems $ Map.fromListWith pair [ (subject p, Left p) | p <- ps ]
+  when (all isLeft pps) $ runtimeError "deadlock"
   return $ concat $ map unpair pps
   where
     pair (Left p) (Left q) | Just (_, In) <- prefix p
@@ -162,6 +163,9 @@ reduceAll logging state ps = do
     pair (Left p) (Left q) | Just (_, Out) <- prefix p
                            , Just (_, In) <- prefix q = Right (p, q)
     pair _ _ = runtimeError $ "linearity violation"
+
+    isLeft (Left _) = True
+    isLeft (Right _) = False
 
     unpair (Left p) = [p]
     unpair (Right (p, q)) = [p, q]
