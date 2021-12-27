@@ -1,2 +1,2 @@
-A(x : !end) = (new (y : !end) A⟨y⟩ in wait y.A⟨x⟩) ⊕ close x
+A(x : !end) = (new (y : !end) A⟨y⟩ in wait y.A⟨x⟩) ⊕ [100,85] close x
 Main = new (x : !end) A⟨x⟩ in wait x.done

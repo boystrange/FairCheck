@@ -65,10 +65,10 @@ rank pdefs = aux []
     aux pnames (Wait _ p) = aux pnames p
     aux _ (Close _) = 0
     aux pnames (Channel _ _ _ p) = aux pnames p
-    aux pnames (Label _ _ cs) = maximum (map (aux pnames . snd) cs)
+    aux pnames (Label _ _ _ cs) = maximum (map (aux pnames . snd) cs)
     aux pnames (New _ _ p q) = 1 + aux pnames p + aux pnames q
     aux pnames (Cast _ _ p) = 1 + aux pnames p
-    aux pnames (Choice _ p) = aux pnames p
+    aux pnames (Choice _ _ _ p) = aux pnames p
 
 -- |Check whether all process definitions are __action bounded__ (Section 5.1).
 checkActionBoundedness :: [ProcessDef] -> IO ()
@@ -96,12 +96,12 @@ checkActionBoundedness pdefs = forM_ pdefs check
     aux pnames (Channel _ _ _ p) = aux pnames p
     -- The input/output of a label is action bounded if so is any of its
     -- branches
-    aux pnames (Label _ _ cs) = any (aux pnames . snd) cs
+    aux pnames (Label _ _ _ cs) = any (aux pnames . snd) cs
     -- A new session is action bounded if so are the sub-processes using the two
     -- endpoints of the session
     aux pnames (New _ _ p q) = aux pnames p && aux pnames q
     aux pnames (Cast _ _ p) = aux pnames p
-    aux pnames (Choice _ p) = aux pnames p
+    aux pnames (Choice _ _ _ p) = aux pnames p
 
 -- |Remove a channel from a context, returning the remaining context and the
 -- session type associated with the channel.
@@ -145,13 +145,13 @@ checkRanks pdefs = do
         aux (Wait _ p) = aux p
         aux (Close _) = return ()
         aux (Channel _ _ _ p) = aux p
-        aux (Label _ _ cs) = forM_ cs (aux . snd)
+        aux (Label _ _ _ cs) = forM_ cs (aux . snd)
         aux (New x _ _ _) = throw $ ErrorSessionUnbounded pname x
         aux (Cast x _ _) = throw $ ErrorCastUnbounded pname x
         -- We implicitly assume that the branch of a non-deterministic choice
         -- leading to termination is the right one, therefore the rank of a
         -- non-deterministic choice is the rank of that branch.
-        aux (Choice _ p) = aux p
+        aux (Choice _ _ _ p) = aux p
 
 -- | Check that all process definitions are well typed. The first argument is
 -- the subtyping relation being used, so that it is possible to choose among
@@ -254,7 +254,7 @@ checkTypes subt pdefs = forM_ pdefs auxD
         -- If it is any other type...
         _ -> throw $ ErrorTypeMismatch x "channel output" (Tree.toType g)
     -- Rule [a-label]
-    auxP ctx (Label x pol cs) = do
+    auxP ctx (Label x pol _ cs) = do
       -- Remove the association for x from the context.
       (ctx, g) <- remove ctx x
       -- Check the shape of the type associated with x.
@@ -305,7 +305,7 @@ checkTypes subt pdefs = forM_ pdefs auxD
       -- In q we compute the dual of the type of x.
       auxP (Map.insert x (Tree.remap $ Tree.dual g) ctxq) q
     -- Rule [a-choice]
-    auxP ctx (Choice p q) = do
+    auxP ctx (Choice _ p _ q) = do
       -- Type check p and q using the same context.
       auxP ctx p
       auxP ctx q

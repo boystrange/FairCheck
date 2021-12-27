@@ -37,13 +37,13 @@ data Process
   -- |Input/output of channel.
   | Channel ChannelName Polarity ChannelName Process
   -- |Input/output of label.
-  | Label ChannelName Polarity [(Label, Process)]
+  | Label ChannelName Polarity [Int] [(Label, Process)]
   -- |Session creation.
   | New ChannelName Type Process Process
   -- |Non-deterministic choice. For the sake of simplicity and differently from
   -- the paper, the annotation indicating which branch of the choice leads to
   -- termination is always assumed to be 2.
-  | Choice Process Process
+  | Choice Int Process Int Process
   -- |Use of fair subtyping.
   | Cast ChannelName Type Process
 
@@ -54,9 +54,9 @@ fn (Call _ us) = Set.fromList us
 fn (Wait u p) = Set.insert u (fn p)
 fn (Close u) = Set.singleton u
 fn (Channel u pol v p) = Set.insert u $ (if pol == Out then Set.insert else Set.delete) v (fn p)
-fn (Label u _ gs) = Set.insert u (Set.unions [ fn p | (_, p) <- gs ])
+fn (Label u _ _ gs) = Set.insert u (Set.unions (map (fn . snd) gs))
 fn (New u _ p q) = Set.delete u (Set.union (fn p) (fn q))
-fn (Choice p q) = Set.union (fn p) (fn q)
+fn (Choice _ p _ q) = Set.union (fn p) (fn q)
 fn (Cast u _ p) = Set.insert u (fn p)
 
 -- |Set of process names occurring along the termination paths of a process.
@@ -66,12 +66,12 @@ pn (Call pname _) = Set.singleton pname
 pn (Wait _ p) = pn p
 pn (Close _) = Set.empty
 pn (Channel _ _ _ p) = pn p
-pn (Label _ _ cs) = Set.unions (map (pn . snd) cs)
+pn (Label _ _ _ cs) = Set.unions (map (pn . snd) cs)
 pn (New _ _ p q) = Set.union (pn p) (pn q)
 -- Note that the set of process names of a non-deterministic choice coincides
 -- with that of its right branch. This is because we implicitly assume that the
 -- right branch is the one leading to termination.
-pn (Choice _ p) = pn p
+pn (Choice _ _ _ p) = pn p
 pn (Cast _ _ p) = pn p
 
 -- | A __process definition__ is a triple made of a process name, a

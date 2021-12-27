@@ -51,9 +51,9 @@ resolveP tdefs = aux
     aux (Wait x p) = Wait x (aux p)
     aux (Close x) = Close x
     aux (Process.Channel x pol y p) = Process.Channel x pol y (aux p)
-    aux (Process.Label x pol bs) = Process.Label x pol (map auxB bs)
+    aux (Process.Label x pol ws bs) = Process.Label x pol ws (map auxB bs)
     aux (New x t p q) = New x (resolveT tdefs t) (aux p) (aux q)
-    aux (Choice p q) = Choice (aux p) (aux q)
+    aux (Choice m p n q) = Choice m (aux p) n (aux q)
     aux (Cast x t p) = Cast x (resolveT tdefs t) (aux p)
 
     auxB (label, p) = (label, aux p)

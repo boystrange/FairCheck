@@ -58,6 +58,8 @@ import Control.Exception
   ')'       { Token _ TokenRParen }
   '{'       { Token _ TokenLBrace }
   '}'       { Token _ TokenRBrace }
+  '['       { Token _ TokenLBrack }
+  ']'       { Token _ TokenRBrack }
   '⌈'       { Token _ TokenLCeil }
   '⌉'       { Token _ TokenRCeil }
   '⟨'       { Token _ TokenLAngle }
@@ -120,12 +122,20 @@ Process
   | WAIT ChannelName '.' Process { Wait $2 $4 }
   | ChannelName '(' ChannelName ')' '.' Process { Channel $1 In $3 $6 }
   | ChannelName '⟨' ChannelName '⟩' '.' Process { Channel $1 Out $3 $6 }
-  | ChannelName Polarity Label '.' Process { Label $1 $2 [($3, $5)] }
-  | ChannelName Polarity Cases { Label $1 $2 $3 }
+  | ChannelName Polarity Label '.' Process { Label $1 $2 [1] [($3, $5)] }
+  | ChannelName Polarity Cases { uncurry (Label $1 $2) (unzip $3) }
   | NEW '(' ChannelName ':' Type ')' Process IN Process { New $3 $5 $7 $9 }
-  | Process '⊕' Process { Choice $1 $3 }
+  | Process '⊕' Weights Process { Choice (fst $3) $1 (snd $3) $4 }
   | '⌈' ChannelName ':' Type '⌉' Process { Cast $2 $4 $6 }
   | ProcessName Names { Call $1 $2 }
+
+Weight
+  : { 1 }
+  | '[' INT ']' { read $ getId $2 }
+
+Weights
+  : { (1, 1) }
+  | '[' INT ',' INT ']' { (read $ getId $2, read $ getId $4) }
 
 Names
   : { [] }
@@ -144,7 +154,7 @@ CaseNeList
   | Case ',' CaseNeList { $1 : $3 }
 
 Case
-  : Label ':' Process { ($1, $3) }
+  : Label Weight ':' Process { ($2, ($1, $4)) }
 
 -- IDENTIFIERS
 

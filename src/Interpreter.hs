@@ -69,11 +69,11 @@ subst = auxP
     auxP σ (Close v) = Close (auxN σ v)
     auxP σ (Channel v In y p) = Channel (auxN σ v) In y (auxP (Map.delete y σ) p)
     auxP σ (Channel v Out w p) = Channel (auxN σ v) Out (auxN σ w) (auxP σ p)
-    auxP σ (Label v pol gs) = Label (auxN σ v) pol (map (auxG σ) gs)
+    auxP σ (Label v pol ws gs) = Label (auxN σ v) pol ws (map (auxG σ) gs)
     auxP σ (New y t p q) = New y t (auxP σ' p) (auxP σ' q)
       where
         σ' = Map.delete y σ
-    auxP σ (Choice p q) = Choice (auxP σ p) (auxP σ q)
+    auxP σ (Choice m p n q) = Choice m (auxP σ p) n (auxP σ q)
     auxP σ (Cast u t p) = Cast (auxN σ u) t (auxP σ p)
 
     auxN :: Substitution -> ChannelName -> ChannelName
@@ -96,7 +96,7 @@ threads logging pmap state = aux
     aux p@(Close u) = return [(u, p)]
     aux p@(Wait u _) = return [(u, p)]
     aux p@(Channel u _ _ _) = return [(u, p)]
-    aux p@(Label u _ _) = return [(u, p)]
+    aux p@(Label u _ _ _) = return [(u, p)]
     aux (Call pname us) = do
       case Map.lookup pname pmap of
         Nothing -> runtimeError $ "undefined process " ++ show pname
@@ -112,23 +112,23 @@ threads logging pmap state = aux
       ps <- aux (subst σ p)
       qs <- aux (subst σ q)
       return $ ps ++ qs
-    aux (Choice p q) = do
-      b <- randomIO :: IO Bool
+    aux (Choice m p n q) = do
+      i <- randomInt (m + n)
       tick state
-      when logging $ printWarning $ "=> performing an internal choice " ++ show b
-      if b then aux p else aux q
+      when logging $ printWarning $ "=> performing an internal choice " ++ show (i < m)
+      if i < m then aux p else aux q
     aux (Cast _ _ p) = aux p
 
 -- | Generate a random integer.
 randomInt :: Int -> IO Int
 randomInt n = (`mod` n) <$> randomIO
 
--- | Picks a random element from a non-empty list.
-pick :: [a] -> IO a
-pick [] = error "cannot choose from empty list"
-pick xs = do
-  i <- randomInt (length xs)
-  return (xs!!i)
+-- | Given a list ws of weights and a weight n picks a random index
+-- with probability that is proportional to the weight at that
+-- index.
+pick :: Int -> [Int] -> Int
+pick m (n : _) | m < n = 0
+pick m (n : ns) = 1 + pick (m - n) ns
 
 -- | Performs all the reductions from a list of processes guarded by
 -- actions with the same subject.
@@ -148,15 +148,16 @@ reduce logging state = aux
       let σ = Map.fromList [(x, v)]
       return [p, subst σ q]
     aux [p@(Channel _ In _ _), q@(Channel _ Out _ _)] = aux [q, p]
-    aux [Label u Out gs, Label _ In fs] = do
-      (tag, p) <- pick gs
+    aux [Label u Out ws gs, Label _ In _ fs] = do
+      n <- randomInt (sum ws)
+      let (tag, p) = gs!!pick n ws
       case lookup tag fs of
         Nothing -> runtimeError $ "communication error when sending " ++ show tag
         Just q -> do
           when logging $ printWarning $ "=> label " ++ show tag ++ " on " ++ show u
           tick state
           return [p, q]
-    aux [p@(Label _ In _), q@(Label _ Out _)] = aux [q, p]
+    aux [p@(Label _ In _ _), q@(Label _ Out _ _)] = aux [q, p]
     aux [_, _] = runtimeError "communication error"
     aux (_ : _ : _ : _) = runtimeError "linearity violation"
 
