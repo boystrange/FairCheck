@@ -154,9 +154,10 @@ reduce logging state = aux
 -- | Perform all possible reductions of a given list of threads.
 reduceAll :: Bool -> InterpreterS -> [Process] -> IO [Process]
 reduceAll logging state ps = do
-  pps <- mapM tryReduce $ Map.elems $ Map.fromListWith pair [ (subject p, Left p) | p <- ps ]
-  when (all isLeft pps) $ runtimeError "deadlock"
-  return $ concat $ map unpair pps
+  let xs = Map.elems $ Map.fromListWith pair [ (subject p, Left p) | p <- ps ]
+  when (not (null xs) && all isLeft xs) $ runtimeError "deadlock"
+  qs <- mapM tryReduce xs
+  return $ concat $ map unpair qs
   where
     pair (Left p) (Left q) | Just (_, In) <- prefix p
                            , Just (_, Out) <- prefix q = Right (q, p)
