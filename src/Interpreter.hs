@@ -86,17 +86,13 @@ subst = auxP
 runtimeError :: String -> a
 runtimeError = throw . ErrorRuntime
 
--- | Flattens a process into a list of threads, expanding process
+-- | Flattens a process into two lists of threads, expanding process
 -- invocations, creating new sessions, performing choices and
 -- discarding casts.
-threads :: Bool -> ProcessMap -> InterpreterS -> Process -> IO [Thread]
+threads :: Bool -> ProcessMap -> InterpreterS -> Process -> IO [Process]
 threads logging pmap state = aux
   where
     aux Done = return []
-    aux p@(Close u) = return [(u, p)]
-    aux p@(Wait u _) = return [(u, p)]
-    aux p@(Channel u _ _ _) = return [(u, p)]
-    aux p@(Label u _ _ _) = return [(u, p)]
     aux (Call pname us) = do
       case Map.lookup pname pmap of
         Nothing -> runtimeError $ "undefined process " ++ show pname
@@ -106,18 +102,18 @@ threads logging pmap state = aux
           aux (subst σ p)
     aux (New x t p q) = do
       u <- newSession state
-      tick state
       when logging $ printWarning $ "=> creating new session " ++ show u
       let σ = Map.fromList [(x, u)]
       ps <- aux (subst σ p)
       qs <- aux (subst σ q)
-      return $ ps ++ qs
+      return (ps ++ qs)
     aux (Choice m p n q) = do
       i <- randomInt (m + n)
       tick state
       when logging $ printWarning $ "=> performing an internal choice " ++ show (i < m)
       if i < m then aux p else aux q
     aux (Cast _ _ p) = aux p
+    aux p = return [p]
 
 -- | Generate a random integer.
 randomInt :: Int -> IO Int
@@ -132,23 +128,19 @@ pick m (n : ns) = 1 + pick (m - n) ns
 
 -- | Performs all the reductions from a list of processes guarded by
 -- actions with the same subject.
-reduce :: Bool -> InterpreterS -> [Process] -> IO [Process]
+reduce :: Bool -> InterpreterS -> Process -> Process -> IO (Either Process (Process, Process))
 reduce logging state = aux
   where
-    aux [] = error "this should not happen"
-    aux [p] = return [p]
-    aux [Close u, Wait _ p] = do
+    aux (Close u) (Wait _ p) = do
       when logging $ printWarning $ "=> closing session " ++ show u
       tick state
-      return [p]
-    aux [p@(Wait _ _), q@(Close _)] = aux [q, p]
-    aux [Channel u Out v p, Channel _ In x q] = do
+      return $ Left p
+    aux (Channel u Out v p) (Channel _ In x q) = do
       when logging $ printWarning $ "=> delegation of " ++ show v ++ " on " ++ show u
       tick state
       let σ = Map.fromList [(x, v)]
-      return [p, subst σ q]
-    aux [p@(Channel _ In _ _), q@(Channel _ Out _ _)] = aux [q, p]
-    aux [Label u Out ws gs, Label _ In _ fs] = do
+      return $ Right (p, subst σ q)
+    aux (Label u Out ws gs) (Label _ In _ fs) = do
       n <- randomInt (sum ws)
       let (tag, p) = gs!!pick n ws
       case lookup tag fs of
@@ -156,19 +148,26 @@ reduce logging state = aux
         Just q -> do
           when logging $ printWarning $ "=> label " ++ show tag ++ " on " ++ show u
           tick state
-          return [p, q]
-    aux [p@(Label _ In _ _), q@(Label _ Out _ _)] = aux [q, p]
-    aux [_, _] = runtimeError "communication error"
-    aux (_ : _ : _ : _) = runtimeError "linearity violation"
+          return $ Right (p, q)
+    aux _ _ = runtimeError "protocol violation"
 
 -- | Perform all possible reductions of a given list of threads.
-reduceAll :: Bool -> InterpreterS -> [Thread] -> IO [Process]
-reduceAll logging state ts = do
-  let sorted = List.sortBy (\(a, _) (b, _) -> compare a b) ts
-  let pss = map (map snd) $ List.groupBy (\(a, _) (b, _) -> a == b) sorted
-  when (not (null ts) && all (\ts -> length ts < 2) pss) $ runtimeError "deadlock"
-  qss <- mapM (reduce logging state) pss
-  return $ concat qss
+reduceAll :: Bool -> InterpreterS -> [Process] -> IO [Process]
+reduceAll logging state ps = do
+  pps <- mapM tryReduce $ Map.elems $ Map.fromListWith pair [ (subject p, Left p) | p <- ps ]
+  return $ concat $ map unpair pps
+  where
+    pair (Left p) (Left q) | Just (_, In) <- prefix p
+                           , Just (_, Out) <- prefix q = Right (q, p)
+    pair (Left p) (Left q) | Just (_, Out) <- prefix p
+                           , Just (_, In) <- prefix q = Right (p, q)
+    pair _ _ = runtimeError $ "linearity violation"
+
+    unpair (Left p) = [p]
+    unpair (Right (p, q)) = [p, q]
+
+    tryReduce (Left p) = return $ Left p
+    tryReduce (Right (p, q)) = reduce logging state p q
 
 -- | Run a process.
 run :: Bool -> [ProcessDef] -> Process -> IO ()

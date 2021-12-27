@@ -52,7 +52,7 @@ limit f x | x == y = x
 
 -- |Compute the zip of two maps, dropping those elements found in one map but
 -- not the other
-zipMap :: Ord k => Map k a -> Map k b -> Map k (a, b) 
+zipMap :: Ord k => Map k a -> Map k b -> Map k (a, b)
 zipMap = Merge.merge Merge.dropMissing Merge.dropMissing (Merge.zipWithMatched (const (,)))
 
 -- |'mergeMap' merges two maps, using different functions to transform those

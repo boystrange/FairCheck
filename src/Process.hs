@@ -74,6 +74,18 @@ pn (New _ _ p q) = Set.union (pn p) (pn q)
 pn (Choice _ _ _ p) = pn p
 pn (Cast _ _ p) = pn p
 
+-- | Prefix of a process, if any.
+prefix :: Process -> Maybe (ChannelName, Polarity)
+prefix (Wait u _) = Just (u, In)
+prefix (Close u) = Just (u, Out)
+prefix (Channel u pol _ _) = Just (u, pol)
+prefix (Label u pol _ _) = Just (u, pol)
+prefix _ = Nothing
+
+-- | Subject of a prefixed process.
+subject :: Process -> ChannelName
+subject p | Just (u, _) <- prefix p = u
+
 -- | A __process definition__ is a triple made of a process name, a
 -- list of name declarations and an optional process body. When the
 -- body is 'Nothing' the process is declared and assumed to be well
