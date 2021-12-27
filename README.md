@@ -601,36 +601,41 @@ The `FairCheck` parser accepts a syntax that is close to, but not exactly the
 same as, the one used in the paper. The table below shows the grammar of
 scripts. Square brackets enclose optional parts of the syntax.
 
-|     Entity |     | Definition                                                       | Description                                 |
-|-----------:|-----|------------------------------------------------------------------|---------------------------------------------|
-|       x, y |     | non-capitalized identifier (e.g. `x`, `y`, ...)                  | Channel name                                |
-|          l |     | non-capitalized identifier or number (e.g. `a`, `add`, `0`, ...) | Label                                       |
-|          X |     | capitalized identifier (e.g. `S`, `T`, ...)                      | Type name                                   |
-|          A |     | capitalized identifier (e.g. `A`, `Main`, ...)                   | Process name                                |
-|          π | ::= | `?`                                                              | Input polarity                              |
-|            |     | `!`                                                              | Output polarity                             |
-|     Script | ::= | TypeDef₁ ... TypeDefₘ ProcessDef₁ ... ProcessDefₙ                |                                             |
-|    TypeDef | ::= | X `=` Type                                                       | Type definition                             |
-| ProcessDef | ::= | A [`(` x₁ `:` Type `,` ... `,` xₙ `:` Type `)`] `=` Process      | Process definition                          |
-|            |     | A [`(` x₁ `:` Type `,` ... `,` xₙ `:` Type `)`] `;`              | Undefined process declaration               |
-|    Process | ::= | `done`                                                           | Terminated process                          |
-|            |     | `close` x                                                        | Signal output                               |
-|            |     | `wait` x `.` Process                                             | Signal input                                |
-|            |     | x `(` y `)` `.` Process                                          | Channel input                               |
-|            |     | x `⟨` y `⟩` `.` Process                                          | Channel output                              |
-|            |     | x π `{` l₁ `:` Process `,` ... `,` lₙ `:` Process `}`            | Label input/output                          |
-|            |     | x `!` l `.` Process                                              | Shortcut for label output                   |
-|            |     | `new` `(` x `:` Type `)` Process `in` Process                    | New session                                 |
-|            |     | Process `⊕` Process                                              | Non-deterministic choice                    |
-|            |     | `⌈` x `:` Type `⌉` Process                                       | Cast                                        |
-|            |     | A [`⟨` x₁ `,` ... `,` xₙ `⟩`]                                    | Invocation                                  |
-|            |     | `(` Process `)`                                                  | Bracketed process                           |
-|       Type | ::= | π `end`                                                          | Terminated session                          |
-|            |     | π Type `.` Type                                                  | Channel input/output                        |
-|            |     | π `{` l₁ `:` Type `,` ... `,` lₙ `:` Type `}`                    | Label input/output                          |
-|            |     | π l `.` Type                                                     | Shortcur for label input/output             |
-|            |     | Type `+` Type                                                    | Shortcut for external choice (label input)  |
-|            |     | Type `⊕` Type                                                    | Shortcur for internal choice (label output) |
-|            |     | X                                                                | Type name                                   |
-|            |     | `rec` X `.` Type                                                 | Recursive type                              |
-|            |     | `(` Type `)`                                                     | Bracketed type                              |
+|     Entity |     | Definition                                                          | Description                                 |
+|-----------:|-----|---------------------------------------------------------------------|---------------------------------------------|
+|       x, y |     | non-capitalized identifier (e.g. `x`, `y`, ...)                     | Channel name                                |
+|          l |     | non-capitalized identifier or number (e.g. `a`, `add`, `0`, ...)    | Label                                       |
+|       m, n |     | natural number                                                      | Natural number                              |
+|          X |     | capitalized identifier (e.g. `S`, `T`, ...)                         | Type name                                   |
+|          A |     | capitalized identifier (e.g. `A`, `Main`, ...)                      | Process name                                |
+|          π | ::= | `?`                                                                 | Input polarity                              |
+|            |     | `!`                                                                 | Output polarity                             |
+|     Script | ::= | TypeDef₁ ... TypeDefₘ ProcessDef₁ ... ProcessDefₙ                   |                                             |
+|    TypeDef | ::= | X `=` Type                                                          | Type definition                             |
+| ProcessDef | ::= | A [`(` x₁ `:` Type `,` ... `,` xₙ `:` Type `)`] `=` Process         | Process definition                          |
+|            |     | A [`(` x₁ `:` Type `,` ... `,` xₙ `:` Type `)`] `;`                 | Undefined process declaration               |
+|    Process | ::= | `done`                                                              | Terminated process                          |
+|            |     | `close` x                                                           | Signal output                               |
+|            |     | `wait` x `.` Process                                                | Signal input                                |
+|            |     | x `(` y `)` `.` Process                                             | Channel input                               |
+|            |     | x `⟨` y `⟩` `.` Process                                             | Channel output                              |
+|            |     | x π `{` l₁ Weight `:` Process `,` ... `,` lₙ Weight `:` Process `}` | Label input/output                          |
+|            |     | x `!` l `.` Process                                                 | Shortcut for label output                   |
+|            |     | `new` `(` x `:` Type `)` Process `in` Process                       | New session                                 |
+|            |     | Process `⊕` Weights Process                                         | Non-deterministic choice                    |
+|            |     | `⌈` x `:` Type `⌉` Process                                          | Cast                                        |
+|            |     | A [`⟨` x₁ `,` ... `,` xₙ `⟩`]                                       | Invocation                                  |
+|            |     | `(` Process `)`                                                     | Bracketed process                           |
+|       Type | ::= | π `end`                                                             | Terminated session                          |
+|            |     | π Type `.` Type                                                     | Channel input/output                        |
+|            |     | π `{` l₁ `:` Type `,` ... `,` lₙ `:` Type `}`                       | Label input/output                          |
+|            |     | π l `.` Type                                                        | Shortcur for label input/output             |
+|            |     | Type `+` Type                                                       | Shortcut for external choice (label input)  |
+|            |     | Type `⊕` Type                                                       | Shortcur for internal choice (label output) |
+|            |     | X                                                                   | Type name                                   |
+|            |     | `rec` X `.` Type                                                    | Recursive type                              |
+|            |     | `(` Type `)`                                                        | Bracketed type                              |
+|     Weight | ::= |                                                                     | Weight 1                                    |
+|            |     | `[` n `]`                                                           | Weight n                                    |
+|    Weights | ::= |                                                                     | Weights (1, 1)                              |
+|            |     | `[` m `,` n `]`                                                     | Weights (m, n)                              |
