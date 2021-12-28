@@ -20,100 +20,40 @@ module Interpreter where
 import Data.Map (Map)
 import qualified Data.Map as Map
 import System.Random (randomIO)
-import qualified Data.List as List
-import Data.IORef
+import System.IO.Unsafe (unsafePerformIO)
 import Control.Monad (when, unless)
 import Control.Exception (throw)
+import Control.Concurrent
 
 import Atoms
 import Process
 import Exceptions
 import Render
 
--- | State of the interpreter, consisting of a pair of references
--- respectively containing the index of the next session to be
--- created and the number of reductions performed so far.
-type InterpreterS = (IORef Int, IORef Int)
+-- | A session endpoint is a pair of channel, the first one is used
+-- for receiving messages and the second one for sending
+-- messages. The peer endpoint has the same two channels in the
+-- opposite order.
+type Session = (Chan Message, Chan Message)
+
+-- | Representation of messages.
+data Message
+  -- | Termination signal.
+  = CloseM
+  -- | Delegation.
+  | SessionM Session
+  -- | Label message.
+  | LabelM Label
+
+-- | An __environment__ maps channel names to session endpoints.
+type Environment = Map ChannelName Session
 
 -- | Map from process names to bound names and process body.
 type ProcessMap = Map ProcessName ([ChannelName], Process)
 
--- | A __thread__ is a pair consisting of a channel name and a
--- process guarded by an action whose subject is precisely that
--- channel name.
-type Thread = (ChannelName, Process)
-
--- | A __substitution__ is a map from channel names to channel
--- names.
-type Substitution = Map ChannelName ChannelName
-
--- | Create a new session.
-newSession :: InterpreterS -> IO ChannelName
-newSession (ref, _) = do
-  n <- readIORef ref
-  writeIORef ref (n + 1)
-  return $ Identifier Somewhere ("$" ++ show n)
-
--- | Increments the number of performed reductions.
-tick :: InterpreterS -> IO ()
-tick (_, ref) = modifyIORef ref succ
-
--- | Perform a name substitution within a process.
-subst :: Substitution -> Process -> Process
-subst = auxP
-  where
-    auxP :: Substitution -> Process -> Process
-    auxP _ Done = Done
-    auxP σ (Call pname us) = Call pname (map (auxN σ) us)
-    auxP σ (Wait v p) = Wait (auxN σ v) (auxP σ p)
-    auxP σ (Close v) = Close (auxN σ v)
-    auxP σ (Channel v In y p) = Channel (auxN σ v) In y (auxP (Map.delete y σ) p)
-    auxP σ (Channel v Out w p) = Channel (auxN σ v) Out (auxN σ w) (auxP σ p)
-    auxP σ (Label v pol ws gs) = Label (auxN σ v) pol ws (map (auxG σ) gs)
-    auxP σ (New y t p q) = New y t (auxP σ' p) (auxP σ' q)
-      where
-        σ' = Map.delete y σ
-    auxP σ (Choice m p n q) = Choice m (auxP σ p) n (auxP σ q)
-    auxP σ (Cast u t p) = Cast (auxN σ u) t (auxP σ p)
-
-    auxN :: Substitution -> ChannelName -> ChannelName
-    auxN σ v | Just u <- Map.lookup v σ = u
-             | otherwise = v
-
-    auxG :: Substitution -> (Label, Process) -> (Label, Process)
-    auxG σ (l, p) = (l, auxP σ p)
-
+-- | Throw a runtime error.
 runtimeError :: String -> a
 runtimeError = throw . ErrorRuntime
-
--- | Flattens a process into two lists of threads, expanding process
--- invocations, creating new sessions, performing choices and
--- discarding casts.
-threads :: Bool -> ProcessMap -> InterpreterS -> Process -> IO [Process]
-threads logging pmap state = aux
-  where
-    aux Done = return []
-    aux (Call pname us) = do
-      case Map.lookup pname pmap of
-        Nothing -> runtimeError $ "undefined process " ++ show pname
-        Just (xs, p) -> do
-          unless (length us == length xs) $ runtimeError $ "wrong number of arguments when invoking " ++ show pname
-          let σ = Map.fromList (zip xs us)
-          aux (subst σ p)
-    aux (New x t p q) = do
-      u <- newSession state
-      when logging $ printWarning $ "=> creating new session " ++ show u
-      let σ = Map.fromList [(x, u)]
-      ps <- aux (subst σ p)
-      qs <- aux (subst σ q)
-      return (ps ++ qs)
-    aux (Choice m p n q) = do
-      i <- randomInt (m + n)
-      tick state
-      when logging $ printWarning $ "=> performing an internal choice " ++ show (i < m)
-      if i < m then aux p else aux q
-    aux (Cast _ _ p) = aux p
-    aux p = return [p]
 
 -- | Generate a random integer.
 randomInt :: Int -> IO Int
@@ -126,70 +66,100 @@ pick :: Int -> [Int] -> Int
 pick m (n : _) | m < n = 0
 pick m (n : ns) = 1 + pick (m - n) ns
 
--- | Performs all the reductions from a list of processes guarded by
--- actions with the same subject.
-reduce :: Bool -> InterpreterS -> Process -> Process -> IO (Either Process (Process, Process))
-reduce logging state = aux
-  where
-    aux (Close u) (Wait _ p) = do
-      when logging $ printWarning $ "=> closing session " ++ show u
-      tick state
-      return $ Left p
-    aux (Channel u Out v p) (Channel _ In x q) = do
-      when logging $ printWarning $ "=> delegation of " ++ show v ++ " on " ++ show u
-      tick state
-      let σ = Map.fromList [(x, v)]
-      return $ Right (p, subst σ q)
-    aux (Label u Out ws gs) (Label _ In _ fs) = do
-      n <- randomInt (sum ws)
-      let (tag, p) = gs!!pick n ws
-      case lookup tag fs of
-        Nothing -> runtimeError $ "communication error when sending " ++ show tag
-        Just q -> do
-          when logging $ printWarning $ "=> label " ++ show tag ++ " on " ++ show u
-          tick state
-          return $ Right (p, q)
-    aux _ _ = runtimeError "protocol violation"
-
--- | Perform all possible reductions of a given list of threads.
-reduceAll :: Bool -> InterpreterS -> [Process] -> IO [Process]
-reduceAll logging state ps = do
-  let xs = Map.elems $ Map.fromListWith pair [ (subject p, Left p) | p <- ps ]
-  when (not (null xs) && all isLeft xs) $ runtimeError "deadlock"
-  qs <- mapM tryReduce xs
-  return $ concat $ map unpair qs
-  where
-    pair (Left p) (Left q) | Just (_, In) <- prefix p
-                           , Just (_, Out) <- prefix q = Right (q, p)
-    pair (Left p) (Left q) | Just (_, Out) <- prefix p
-                           , Just (_, In) <- prefix q = Right (p, q)
-    pair _ _ = runtimeError $ "linearity violation"
-
-    isLeft (Left _) = True
-    isLeft (Right _) = False
-
-    unpair (Left p) = [p]
-    unpair (Right (p, q)) = [p, q]
-
-    tryReduce (Left p) = return $ Left p
-    tryReduce (Right (p, q)) = reduce logging state p q
-
--- | Run a process.
+-- Run a process.
 run :: Bool -> [ProcessDef] -> Process -> IO ()
-run logging pdefs p = do
-  ref1 <- newIORef 0
-  ref2 <- newIORef 0
-  aux (ref1, ref2) [p]
-  ns <- readIORef ref1
-  nr <- readIORef ref2
-  putStrLn $ show ns ++ " sessions, " ++ show nr ++ " reductions"
+run logging pdefs = aux Map.empty
   where
-    aux :: InterpreterS -> [Process] -> IO [Process]
-    aux _ [] = return []
-    aux state ps = do
-      ts <- concat <$> mapM (threads logging pmap state) ps
-      qs <- reduceAll logging state ts
-      aux state qs
+    channel :: Environment -> ChannelName -> Session
+    channel env u | Just c <- Map.lookup u env = c
+                  | otherwise = runtimeError $ "unbound channel name " ++ show u
+
+    children :: MVar [MVar ()]
+    children = unsafePerformIO (newMVar [])
 
     pmap :: ProcessMap
     pmap = Map.fromList [ (pname, (map fst xs, p)) | (pname, xs, Just p) <- pdefs ]
+
+    send :: Environment -> ChannelName -> Message -> IO ()
+    send σ u = writeChan (snd $ channel σ u)
+
+    receive :: Environment -> ChannelName -> IO Message
+    receive σ u = readChan (fst $ channel σ u)
+
+    forkChild :: IO () -> IO ThreadId
+    forkChild io = do
+      mvar <- newEmptyMVar
+      childs <- takeMVar children
+      putMVar children (mvar : childs)
+      forkFinally io (\_ -> putMVar mvar ())
+
+    waitForChildren :: IO ()
+    waitForChildren = do
+      cs <- takeMVar children
+      case cs of
+        [] -> return ()
+        m : ms -> do
+          putMVar children ms
+          takeMVar m
+          waitForChildren
+
+    aux :: Environment -> Process -> IO ()
+    aux σ Done = waitForChildren
+    aux σ (Call pname us) =
+      case Map.lookup pname pmap of
+        Nothing -> runtimeError $ "undefined process " ++ show pname
+        Just (xs, p) -> do
+          unless (length us == length xs) $ runtimeError $ "wrong number of arguments when invoking " ++ show pname
+          let σ' = foldr (uncurry Map.insert) σ (zip xs (map (channel σ) us))
+          aux σ' p
+    aux σ (Wait u p) = do
+      m <- receive σ u
+      case m of
+        CloseM -> do
+          log $ "closed session " ++ show u
+          aux σ p
+        _ -> runtimeError $ "wait: wrong message type from " ++ show u
+    aux σ (Close u) = do
+      log $ "closing session " ++ show u
+      send σ u CloseM
+    aux σ (Channel u Out v p) = do
+      log $ "sending channel " ++ show v ++ " on " ++ show u
+      send σ u (SessionM (channel σ v))
+      aux (Map.delete v σ) p
+    aux σ (Channel u In x p) = do
+      m <- receive σ u
+      case m of
+        SessionM s -> do
+          log $ "received channel " ++ show x ++ " from " ++ show u
+          aux (Map.insert x s σ) p
+        _ -> runtimeError $ "channel input: wrong message type from " ++ show u
+    aux σ (Label u Out ws gs) = do
+      n <- randomInt (sum ws)
+      let (tag, p) = gs!!pick n ws
+      log $ "sending label " ++ show tag ++ " on " ++ show u
+      send σ u (LabelM tag)
+      aux σ p
+    aux σ (Label u In _ gs) = do
+      m <- receive σ u
+      case m of
+        LabelM tag -> do
+          log $ "received label " ++ show tag ++ " from " ++ show u
+          case lookup tag gs of
+            Just p -> aux σ p
+            Nothing -> runtimeError $ "label input: unexpected label " ++ show tag
+        _ -> runtimeError $ "label input: wrong message type from " ++ show u
+    aux σ (New u _ p q) = do
+      ic <- newChan
+      oc <- newChan
+      forkChild (aux (Map.insert u (ic, oc) σ) p)
+      aux (Map.insert u (oc, ic) σ) q
+    aux σ (Choice m p n q) = do
+      i <- randomInt (m + n)
+      log $ "performing an internal choice " ++ show (i < m)
+      aux σ (if i < m then p else q)
+    aux σ (Cast _ _ p) = aux σ p
+
+    log :: String -> IO ()
+    log msg = do
+      t <- myThreadId
+      when logging $ printWarning $ show t ++ ": " ++ msg
