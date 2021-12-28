@@ -30,14 +30,15 @@ import Process
 import Exceptions
 import Render
 
--- | A session endpoint consists of a symbolic and a pair of
+-- | A session endpoint consists of a symbolic name, a boolean value
+-- used to distinguish an endpoint from its peer, and a pair of
 -- channels, the first one is used for receiving messages and the
--- second one for sending messages. The peer endpoint has the same
--- two channels in the opposite order.
-data Endpoint = Endpoint ChannelName (Chan Message) (Chan Message)
+-- second one for sending messages. The peer endpoint has the
+-- opposite polarity and same two channels in the opposite order.
+data Endpoint = Endpoint ChannelName Bool (Chan Message) (Chan Message)
 
 instance Show Endpoint where
-  show (Endpoint u _ _) = showWithPos u
+  show (Endpoint u pol _ _) = show u ++ if pol then "⁺" else "⁻"
 
 -- | Representation of messages.
 data Message
@@ -87,13 +88,13 @@ run logging pdefs = aux Map.empty
     newSession u = do
       c <- newChan
       d <- newChan
-      return (Endpoint u c d, Endpoint u d c)
+      return (Endpoint u True c d, Endpoint u False d c)
 
     send :: Environment -> ChannelName -> Message -> IO ()
-    send σ u | Endpoint _ _ x <- find σ u = writeChan x
+    send σ u | Endpoint _ _ _ x <- find σ u = writeChan x
 
     receive :: Environment -> ChannelName -> IO Message
-    receive σ u | Endpoint _ x _ <- find σ u = readChan x
+    receive σ u | Endpoint _ _ x _ <- find σ u = readChan x
 
     forkChild :: IO () -> IO ThreadId
     forkChild io = do
