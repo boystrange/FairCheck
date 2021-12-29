@@ -15,6 +15,7 @@
 --
 -- Copyright 2021 Luca Padovani
 
+-- | Implementation of the interpreter for processes.
 module Interpreter where
 
 import Data.Map (Map)
@@ -70,7 +71,7 @@ pick :: Int -> [Int] -> Int
 pick m (n : _) | m < n = 0
 pick m (n : ns) = 1 + pick (m - n) ns
 
--- Run a process.
+-- | Run a process.
 run :: Bool -> [ProcessDef] -> Process -> IO ()
 run logging pdefs = aux Map.empty
   where

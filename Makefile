@@ -16,6 +16,7 @@ SOURCES = \
   Relation.hs \
   Render.hs \
   Resolver.hs \
+  Interpreter.hs \
   Tree.hs \
   Type.hs \
   $(NULL)
