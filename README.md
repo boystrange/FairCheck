@@ -595,6 +595,8 @@ following modules:
   **unfair subtyping** and **fair subtyping** decision algorithms
 * [`Render`](src/Render.hs): **pretty printer** for session types and error
   messages
+* [`Interpreter`](src/Interpreter.hs): **interpreter** for
+  processes, even ill-typed ones
 * [`Main`](src/Main.hs): main module and handler of command-line options
 
 The `FairCheck` parser accepts a syntax that is close to, but not exactly the
