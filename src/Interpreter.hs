@@ -21,8 +21,7 @@ module Interpreter where
 import Data.Map (Map)
 import qualified Data.Map as Map
 import System.Random (randomIO)
-import System.IO.Unsafe (unsafePerformIO)
-import Control.Monad (when, unless)
+import Control.Monad (forM_, when, unless)
 import Control.Exception (throw)
 import Control.Concurrent
 
@@ -71,22 +70,21 @@ pick :: Int -> [Int] -> Int
 pick m (n : _) | m < n = 0
 pick m (n : ns) = 1 + pick (m - n) ns
 
+type Thread = MVar ()
+
 -- | Run a process.
 run :: Bool -> [ProcessDef] -> Process -> IO ()
-run logging pdefs = aux Map.empty
+run logging pdefs = aux [] Map.empty
   where
     find :: Environment -> ChannelName -> Endpoint
     find env u | Just c <- Map.lookup u env = c
                | otherwise = runtimeError $ "unbound channel name " ++ show u
 
-    children :: MVar [MVar ()]
-    children = unsafePerformIO (newMVar [])
-
     pmap :: ProcessMap
     pmap = Map.fromList [ (pname, (map fst xs, p)) | (pname, xs, Just p) <- pdefs ]
 
-    newSession :: ChannelName -> IO (Endpoint, Endpoint)
-    newSession u = do
+    new :: ChannelName -> IO (Endpoint, Endpoint)
+    new u = do
       c <- newChan
       d <- newChan
       return (Endpoint u True c d, Endpoint u False d c)
@@ -97,78 +95,73 @@ run logging pdefs = aux Map.empty
     receive :: Environment -> ChannelName -> IO Message
     receive σ u | Endpoint _ _ x _ <- find σ u = readChan x
 
-    forkChild :: IO () -> IO ThreadId
-    forkChild io = do
+    fork :: IO () -> IO Thread
+    fork io = do
       mvar <- newEmptyMVar
-      childs <- takeMVar children
-      putMVar children (mvar : childs)
       forkFinally io (\_ -> putMVar mvar ())
+      return mvar
 
-    waitForChildren :: IO ()
-    waitForChildren = do
-      cs <- takeMVar children
-      case cs of
-        [] -> return ()
-        m : ms -> do
-          putMVar children ms
-          takeMVar m
-          waitForChildren
+    wait :: [Thread] -> IO ()
+    wait = mapM_ takeMVar
 
-    aux :: Environment -> Process -> IO ()
-    aux σ Done = waitForChildren >> log "done"
-    aux σ (Call pname us) =
+    aux :: [Thread] -> Environment -> Process -> IO ()
+    aux threads σ Done = do
+      wait threads
+      log "done"
+    aux threads σ (Call pname us) =
       case Map.lookup pname pmap of
         Nothing -> runtimeError $ "undefined process " ++ show pname
         Just (xs, p) -> do
           unless (length us == length xs) $ runtimeError $ "wrong number of arguments when invoking " ++ show pname
           let σ' = foldr (uncurry Map.insert) σ (zip xs (map (find σ) us))
-          aux σ' p
-    aux σ (Wait u p) = do
+          aux threads σ' p
+    aux threads σ (Wait u p) = do
       m <- receive σ u
       case m of
         CloseM -> do
           log $ "closed session " ++ show (find σ u)
-          aux σ p
+          aux threads σ p
         _ -> runtimeError $ "wait: wrong message type from " ++ show u
-    aux σ (Close u) = do
+    aux threads σ (Close u) = do
       log $ "closing session " ++ show (find σ u)
       send σ u CloseM
-    aux σ (Channel u Out v p) = do
+      wait threads
+    aux threads σ (Channel u Out v p) = do
       log $ "sending endpoint " ++ show (find σ v) ++ " on " ++ show (find σ u)
       send σ u (EndpointM (find σ v))
-      aux (Map.delete v σ) p
-    aux σ (Channel u In x p) = do
+      aux threads (Map.delete v σ) p
+    aux threads σ (Channel u In x p) = do
       m <- receive σ u
       case m of
         EndpointM s -> do
           log $ "received endpoint " ++ show s ++ " from " ++ show (find σ u)
-          aux (Map.insert x s σ) p
+          aux threads (Map.insert x s σ) p
         _ -> runtimeError $ "endpoint input: wrong message type from " ++ show u
-    aux σ (Label u Out ws gs) = do
+    aux threads σ (Label u Out ws gs) = do
       n <- randomInt (sum ws)
       let (tag, p) = gs!!pick n ws
       log $ "sending label " ++ show tag ++ " on " ++ show (find σ u)
       send σ u (LabelM tag)
-      aux σ p
-    aux σ (Label u In _ gs) = do
+      aux threads σ p
+    aux threads σ (Label u In _ gs) = do
       m <- receive σ u
       case m of
         LabelM tag -> do
           log $ "received label " ++ show tag ++ " from " ++ show (find σ u)
           case lookup tag gs of
-            Just p -> aux σ p
+            Just p -> aux threads σ p
             Nothing -> runtimeError $ "label input: unexpected label " ++ show tag
         _ -> runtimeError $ "label input: wrong message type from " ++ show u
-    aux σ (New u _ p q) = do
-      (x, y) <- newSession u
+    aux threads σ (New u _ p q) = do
+      (x, y) <- new u
       log $ "creating session " ++ show x
-      forkChild (aux (Map.insert u x σ) p)
-      aux (Map.insert u y σ) q
-    aux σ (Choice m p n q) = do
+      thread <- fork (aux [] (Map.insert u x σ) p)
+      aux (thread : threads) (Map.insert u y σ) q
+    aux threads σ (Choice m p n q) = do
       i <- randomInt (m + n)
       log $ "performing an internal choice " ++ show (i < m)
-      aux σ (if i < m then p else q)
-    aux σ (Cast _ _ p) = aux σ p
+      aux threads σ (if i < m then p else q)
+    aux threads σ (Cast _ _ p) = aux threads σ p
 
     log :: String -> IO ()
     log msg = do

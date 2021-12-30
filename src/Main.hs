@@ -39,7 +39,7 @@ import qualified Interpreter
 
 -- |Version of the program.
 version :: Data.Version.Version
-version = Data.Version.makeVersion [1, 2]
+version = Data.Version.makeVersion [2, 0]
 
 -- |Entry point.
 main :: IO ()
